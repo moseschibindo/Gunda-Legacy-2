@@ -92,24 +92,35 @@ export const api = {
       const { data, error } = await supabase.auth.signUp({
         email: body.email || `${body.phone}@gundalegacy.com`,
         password: body.password,
+        options: {
+          data: {
+            name: body.name,
+            phone: body.phone
+          }
+        }
       });
       if (error) throw error;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user?.id,
-          phone: body.phone,
-          email: body.email,
-          name: body.name,
-          role: 'member'
-        })
-        .select()
-        .single();
+      // The profile is now created by the DB trigger we added in SUPABASE_SETUP.sql
+      // So we just need to fetch it to return it.
+      // If session is null, it means email confirmation is required.
+      
+      let profile = null;
+      if (data.user) {
+        const { data: p } = await supabase
+          .from('profiles')
+          .select('*, contributions(amount)')
+          .eq('id', data.user.id)
+          .single();
+        profile = p;
+      }
+
+      const total_contribution = (profile?.contributions as any[])?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
 
       return {
-        token: data.session?.access_token,
-        user: { ...profile, total_contribution: 0 }
+        token: data.session?.access_token || null,
+        user: profile ? { ...profile, total_contribution } : null,
+        message: data.session ? null : "Please check your email to confirm your account before logging in."
       };
     }
 

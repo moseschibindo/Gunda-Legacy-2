@@ -171,7 +171,7 @@ const Sidebar = ({ logo, appName, user, onLogout }: { logo?: string; appName?: s
       <div className="mt-auto pt-8 border-t border-gray-50 space-y-6">
         <div className="flex items-center gap-4 px-2">
           <div className="w-12 h-12 rounded-2xl bg-gray-100 overflow-hidden border-2 border-white shadow-md shrink-0">
-            {user.profile_picture ? (
+            {user?.profile_picture ? (
               <img src={user.profile_picture} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 bg-blue-50">
@@ -180,8 +180,8 @@ const Sidebar = ({ logo, appName, user, onLogout }: { logo?: string; appName?: s
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-black text-gray-900 truncate tracking-tight">{user.name}</p>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{user.role}</p>
+            <p className="text-sm font-black text-gray-900 truncate tracking-tight">{user?.name || "User"}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{user?.role || "Member"}</p>
           </div>
           <button 
             onClick={onLogout}
@@ -259,9 +259,19 @@ const LoginPage = ({ onLogin }: { onLogin: (u: any, t: string) => void }) => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setMessage("");
     try {
       const data = await api.post("/signup", { phone, email, password, name });
-      onLogin(data.user, data.token);
+      if (data.token) {
+        onLogin(data.user, data.token);
+      } else {
+        setMessage(data.message || "Signup successful! Please check your email to confirm your account.");
+        // Switch to login view after a short delay
+        setTimeout(() => {
+          setIsSignUp(false);
+          setMessage("");
+        }, 5000);
+      }
     } catch (err: any) {
       setError(err.message || "Error signing up");
     }
@@ -1312,8 +1322,8 @@ export default function App() {
   }
 
   if (loading) return null;
-
-  if (!token) {
+  
+  if (!token || !user) {
     return (
       <Routes>
         <Route path="/reset-password" element={<ResetPasswordPage />} />
