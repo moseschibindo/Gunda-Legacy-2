@@ -65,20 +65,29 @@ export const api = {
 
   async post(endpoint: string, body: any, _token?: string) {
     if (endpoint === "/login") {
-      // Note: This is a simplified login for the wrapper. 
-      // In reality, we should use Supabase Auth directly in App.tsx.
-      // But for the wrapper to work, we'll assume the caller handles the logic.
+      const email = body.email || `${body.phone}@gundalegacy.com`;
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: body.email || `${body.phone}@gundalegacy.com`,
+        email,
         password: body.password,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          throw new Error("Invalid phone number or password. Please check your details or sign up if you don't have an account.");
+        }
+        throw error;
+      }
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*, contributions(amount)')
         .eq('id', data.user.id)
-        .single();
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      
+      if (!profile) {
+        throw new Error("Your profile could not be found. Please contact support.");
+      }
 
       const total_contribution = (profile?.contributions as any[])?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
 
@@ -89,8 +98,9 @@ export const api = {
     }
 
     if (endpoint === "/signup") {
+      const email = body.email || `${body.phone}@gundalegacy.com`;
       const { data, error } = await supabase.auth.signUp({
-        email: body.email || `${body.phone}@gundalegacy.com`,
+        email,
         password: body.password,
         options: {
           data: {
@@ -99,20 +109,50 @@ export const api = {
           }
         }
       });
-      if (error) throw error;
 
-      // The profile is now created by the DB trigger we added in SUPABASE_SETUP.sql
-      // So we just need to fetch it to return it.
-      // If session is null, it means email confirmation is required.
-      
+      if (error) {
+        if (error.message.includes("User already registered")) {
+          throw new Error("This phone number is already registered. Please sign in instead.");
+        }
+        throw error;
+      }
+
       let profile = null;
       if (data.user) {
-        const { data: p } = await supabase
-          .from('profiles')
-          .select('*, contributions(amount)')
-          .eq('id', data.user.id)
-          .single();
-        profile = p;
+        // Retry a few times to wait for the trigger
+        for (let i = 0; i < 3; i++) {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          const { data: p } = await supabase
+            .from('profiles')
+            .select('*, contributions(amount)')
+            .eq('id', data.user.id)
+            .maybeSingle();
+          
+          if (p) {
+            profile = p;
+            break;
+          }
+        }
+
+        // Final fallback: Manually create the profile if it's still missing
+        if (!profile) {
+          console.log("Profile still missing after signup retries, attempting manual creation...");
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              name: body.name || "New Member",
+              phone: body.phone || "",
+              email: body.email || "",
+              role: 'member'
+            })
+            .select()
+            .maybeSingle();
+          
+          if (!createError && newProfile) {
+            profile = newProfile;
+          }
+        }
       }
 
       const total_contribution = (profile?.contributions as any[])?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
@@ -120,7 +160,7 @@ export const api = {
       return {
         token: data.session?.access_token || null,
         user: profile ? { ...profile, total_contribution } : null,
-        message: data.session ? null : "Please check your email to confirm your account before logging in."
+        message: data.session ? null : "Signup successful! Please check your email to confirm your account before logging in."
       };
     }
 

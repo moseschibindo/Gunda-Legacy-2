@@ -43,22 +43,61 @@ const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retryCount = 0) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*, contributions(amount)')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+
+      if (!profile) {
+        // If profile doesn't exist yet (e.g., trigger still running), retry a few times
+        if (retryCount < 3) {
+          console.log(`Profile not found for ${userId}, retrying... (${retryCount + 1})`);
+          setTimeout(() => fetchProfile(userId, retryCount + 1), 1500);
+          return;
+        }
+        
+        // Fallback: Manually create the profile if it's still missing after retries
+        console.log("Profile still missing after retries, attempting manual creation...");
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (authUser && authUser.id === userId) {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              name: authUser.user_metadata?.name || "New Member",
+              phone: authUser.user_metadata?.phone || "",
+              email: authUser.email || "",
+              role: 'member'
+            })
+            .select()
+            .maybeSingle();
+
+          if (!createError && newProfile) {
+            setUser({ ...newProfile, total_contribution: 0 });
+            setLoading(false);
+            return;
+          }
+        }
+
+        console.error("Profile still not found after retries for user:", userId);
+        setLoading(false);
+        return;
+      }
 
       const total_contribution = (profile?.contributions as any[])?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
       setUser({ ...profile, total_contribution });
     } catch (err) {
       console.error("Error fetching profile:", err);
     } finally {
-      setLoading(false);
+      if (retryCount === 0 || retryCount >= 3) {
+        setLoading(false);
+      }
     }
   };
 
@@ -266,14 +305,22 @@ const LoginPage = ({ onLogin }: { onLogin: (u: any, t: string) => void }) => {
         onLogin(data.user, data.token);
       } else {
         setMessage(data.message || "Signup successful! Please check your email to confirm your account.");
-        // Switch to login view after a short delay
         setTimeout(() => {
           setIsSignUp(false);
           setMessage("");
         }, 5000);
       }
     } catch (err: any) {
-      setError(err.message || "Error signing up");
+      if (err.message.includes("already registered")) {
+        setError(err.message);
+        // Automatically switch to login after 2 seconds
+        setTimeout(() => {
+          setIsSignUp(false);
+          setError("");
+        }, 3000);
+      } else {
+        setError(err.message || "Error signing up");
+      }
     }
   };
 
@@ -282,10 +329,10 @@ const LoginPage = ({ onLogin }: { onLogin: (u: any, t: string) => void }) => {
     setError("");
     setMessage("");
     try {
-      const res = await api.post("/forgot-password", { phone, email });
+      const res = await api.post("/forgot-password", { email });
       setMessage(res.message);
     } catch (err: any) {
-      setError(err.message || "User not found");
+      setError(err.message || "User not found with this email");
     }
   };
 
@@ -320,23 +367,25 @@ const LoginPage = ({ onLogin }: { onLogin: (u: any, t: string) => void }) => {
               />
             </div>
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <input
-              type="text"
-              required={!isForgot || !email}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              placeholder="0790805176"
-            />
-          </div>
+          {!isForgot && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input
+                type="text"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                placeholder="0790805176"
+              />
+            </div>
+          )}
           {(isSignUp || isForgot) && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
                 type="email"
-                required={isSignUp || (!phone && isForgot)}
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
