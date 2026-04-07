@@ -9,11 +9,15 @@ export function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-KE', {
     style: 'currency',
     currency: 'KES',
+    minimumFractionDigits: 0,
   }).format(amount);
 }
 
-export function phoneToEmail(phone: string) {
-  // Remove any non-digit characters
-  const cleanPhone = phone.replace(/\D/g, '');
-  return `${cleanPhone}@gundalegacy.com`;
+export function getSundayOfDate(date: Date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? 0 : 0); // Sunday is 0
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }

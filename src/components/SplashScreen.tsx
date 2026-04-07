@@ -1,88 +1,54 @@
+import React from 'react';
 import { motion } from 'motion/react';
-import { useSettings } from '../hooks/useSettings';
+import { useSettings } from '../context/SettingsContext';
 
-export function SplashScreen({ onComplete }: { onComplete: () => void }) {
+const SplashScreen: React.FC = () => {
   const { settings } = useSettings();
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      animate={{ opacity: 0 }}
-      transition={{ duration: 0.8, delay: 2.5, ease: "easeInOut" }}
-      onAnimationComplete={onComplete}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0F172A] overflow-hidden"
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-emerald-600 text-white"
     >
-      {/* Atmospheric Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-blue-600/20 blur-[120px]" 
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            opacity: [0.2, 0.4, 0.2]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear", delay: 1 }}
-          className="absolute -bottom-[10%] -right-[5%] w-[50%] h-[50%] rounded-full bg-indigo-500/20 blur-[100px]" 
-        />
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center">
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ 
-            type: "spring",
-            stiffness: 100,
-            damping: 15,
-            delay: 0.2 
-          }}
-          className="relative"
-        >
-          <div className="absolute inset-0 bg-blue-500/30 blur-2xl rounded-full animate-pulse" />
-          <img
-            src={settings.app_logo}
-            alt="Logo"
-            className="relative h-32 w-32 rounded-[2rem] shadow-2xl border border-white/10 object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-8 text-center"
-        >
-          <h1 className="text-4xl font-black tracking-tighter text-white sm:text-5xl">
-            {settings.app_name}
-          </h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
-            transition={{ duration: 1, delay: 1.2 }}
-            className="mt-3 text-lg font-medium text-blue-100/80 tracking-wide uppercase text-[10px]"
-          >
-            {settings.app_slogan}
-          </motion.p>
-        </motion.div>
-      </div>
-
-      <div className="absolute bottom-16 w-48">
-        <div className="h-[2px] w-full overflow-hidden rounded-full bg-white/10">
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: '100%' }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="h-full w-full bg-gradient-to-r from-transparent via-blue-400 to-transparent"
-          />
-        </div>
-      </div>
+      <motion.div
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="mb-4"
+      >
+        {settings.app_logo ? (
+          <img src={settings.app_logo} alt="Logo" className="w-24 h-24 rounded-full shadow-xl" />
+        ) : (
+          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center text-emerald-600 text-4xl font-bold shadow-xl">
+            G
+          </div>
+        )}
+      </motion.div>
+      <motion.h1
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.6 }}
+        className="text-3xl font-bold tracking-tight"
+      >
+        {settings.app_name}
+      </motion.h1>
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.6 }}
+        className="text-emerald-100 mt-2"
+      >
+        {settings.app_slogan}
+      </motion.p>
+      <motion.div
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+        className="mt-12 w-2 h-2 bg-white rounded-full"
+      />
     </motion.div>
   );
-}
+};
+
+export default SplashScreen;
