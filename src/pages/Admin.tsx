@@ -524,13 +524,13 @@ const Admin: React.FC = () => {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white w-full max-w-sm rounded-[32px] p-8 shadow-2xl relative text-center"
+            className="bg-white dark:bg-[#1a1a1a] w-full max-w-sm rounded-[32px] p-8 shadow-2xl relative text-center transition-colors duration-300"
           >
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{alertModal.title}</h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">{alertModal.message}</p>
             <button
               onClick={() => setAlertModal(null)}
-              className="w-full py-4 bg-emerald-600 dark:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none"
+              className="w-full py-4 bg-emerald-600 dark:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all active:scale-[0.98]"
             >
               Okay
             </button>
