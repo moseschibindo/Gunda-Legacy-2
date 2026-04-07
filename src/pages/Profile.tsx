@@ -18,6 +18,7 @@ const Profile: React.FC = () => {
   });
   const [uploading, setUploading] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [quote, setQuote] = useState('');
   const [totalSavings, setTotalSavings] = useState(0);
   const [savingsLoading, setSavingsLoading] = useState(true);
@@ -101,6 +102,7 @@ const Profile: React.FC = () => {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     setUploading(true);
+    setError(null);
     
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
@@ -111,7 +113,9 @@ const Profile: React.FC = () => {
       .from('profiles')
       .upload(filePath, file);
 
-    if (!uploadError) {
+    if (uploadError) {
+      setError(uploadError.message);
+    } else {
       const { data: { publicUrl } } = supabase.storage
         .from('profiles')
         .getPublicUrl(filePath);
@@ -129,6 +133,7 @@ const Profile: React.FC = () => {
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0 || profile?.role !== 'admin') return;
     setLogoUploading(true);
+    setError(null);
     
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
@@ -136,21 +141,24 @@ const Profile: React.FC = () => {
     const filePath = `logos/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('profiles') // Reusing profiles bucket for simplicity
+      .from('profiles')
       .upload(filePath, file);
 
-    if (!uploadError) {
+    if (uploadError) {
+      setError(uploadError.message);
+    } else {
       const { data: { publicUrl } } = supabase.storage
         .from('profiles')
         .getPublicUrl(filePath);
 
-      // Update settings table
       const { error: settingsError } = await supabase
         .from('settings')
         .upsert({ key: 'app_logo', value: publicUrl }, { onConflict: 'key' });
       
       if (!settingsError) {
         await refreshSettings();
+      } else {
+        setError(settingsError.message);
       }
     }
     setLogoUploading(false);
@@ -171,6 +179,19 @@ const Profile: React.FC = () => {
             <p className="text-amber-900 font-bold text-sm">Action Required</p>
             <p className="text-amber-700 text-xs mt-0.5">Please update your name and email address to continue using Gunda Legacy.</p>
           </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-start space-x-3">
+          <ShieldAlert className="text-red-600 mt-0.5" size={20} />
+          <div>
+            <p className="text-red-900 font-bold text-sm">Upload Error</p>
+            <p className="text-red-700 text-xs mt-0.5">{error}</p>
+          </div>
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">
+            <X size={16} />
+          </button>
         </div>
       )}
 

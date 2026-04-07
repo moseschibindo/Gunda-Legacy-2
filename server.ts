@@ -26,6 +26,22 @@ async function startServer() {
     }
   });
 
+  // Ensure Storage Bucket exists
+  const ensureBucket = async () => {
+    const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+    const bucketExists = buckets?.some(b => b.name === 'profiles');
+    
+    if (!bucketExists) {
+      await supabaseAdmin.storage.createBucket('profiles', {
+        public: true,
+        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+        fileSizeLimit: 2 * 1024 * 1024 // 2MB
+      });
+      console.log('Created "profiles" storage bucket');
+    }
+  };
+  ensureBucket();
+
   // Password Reset Verification Endpoint
   app.post('/api/verify-reset', async (req, res) => {
     const { email, phone } = req.body;

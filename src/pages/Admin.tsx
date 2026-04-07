@@ -42,6 +42,7 @@ const Admin: React.FC = () => {
     title: string;
     message: string;
   } | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -143,6 +144,34 @@ const Admin: React.FC = () => {
   const updateSetting = async (key: string, value: string) => {
     const { error } = await supabase.from('settings').upsert({ key, value });
     if (!error) refreshSettings();
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setLogoUploading(true);
+    
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `app-logo-${Math.random()}.${fileExt}`;
+    const filePath = `logos/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('profiles')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      setAlertModal({
+        title: "Upload Failed",
+        message: uploadError.message
+      });
+    } else {
+      const { data: { publicUrl } } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath);
+
+      await updateSetting('app_logo', publicUrl);
+    }
+    setLogoUploading(false);
   };
 
   const filteredUsers = users.filter(u => 
@@ -312,6 +341,25 @@ const Admin: React.FC = () => {
               <Settings size={18} className="mr-2 text-emerald-600" /> App Branding
             </h3>
             <div className="space-y-4">
+              <div className="flex items-center space-x-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="w-20 h-20 rounded-2xl bg-white border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
+                  {logoUploading ? (
+                    <Loader2 className="animate-spin text-emerald-600" size={24} />
+                  ) : settings.app_logo ? (
+                    <img src={settings.app_logo} alt="App Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <Plus size={24} className="text-gray-300" />
+                  )}
+                  <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                    <Plus className="text-white" size={24} />
+                    <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={logoUploading} />
+                  </label>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900">App Logo</p>
+                  <p className="text-xs text-gray-500 mt-1">Upload a logo to represent {settings.app_name} across the application.</p>
+                </div>
+              </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-gray-400 uppercase">App Name</label>
                 <input
