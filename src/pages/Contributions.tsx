@@ -86,8 +86,8 @@ const Contributions: React.FC = () => {
   }
 
   return (
-    <div className="p-4 space-y-6 pb-24">
-      <h2 className="text-2xl font-bold text-gray-900">Savings History</h2>
+    <div className="p-4 space-y-6 pb-24 transition-colors duration-300">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Savings History</h2>
 
       <div className="space-y-4">
         <div className="relative">
@@ -96,19 +96,19 @@ const Contributions: React.FC = () => {
             placeholder="Search by member or description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm"
+            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm text-gray-900 dark:text-white transition-colors duration-300"
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
         </div>
 
-        <div className="flex bg-gray-100 p-1 rounded-2xl">
+        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl transition-colors duration-300">
           {(['all', 'recent', 'large'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
                 "flex-1 py-2 text-xs font-bold rounded-xl transition-all capitalize",
-                filter === f ? "bg-white text-emerald-600 shadow-sm" : "text-gray-500"
+                filter === f ? "bg-white dark:bg-[#1a1a1a] text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-gray-500 dark:text-gray-400"
               )}
             >
               {f}
@@ -127,15 +127,15 @@ const Contributions: React.FC = () => {
               >
                 <div className="flex items-center space-x-2">
                   <div className="w-1 h-4 bg-emerald-500 rounded-full" />
-                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">{week}</h3>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">
+                  <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{week}</h3>
+                  <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">
                     {formatCurrency(items.reduce((acc, curr) => acc + curr.amount, 0))}
                   </span>
-                  <span className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 px-2 py-0.5 rounded-full font-bold">
                     {items.length} {items.length === 1 ? 'Record' : 'Records'}
                   </span>
                 </div>
-                {expandedWeeks[week] ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                {expandedWeeks[week] ? <ChevronUp size={16} className="text-gray-400 dark:text-gray-500" /> : <ChevronDown size={16} className="text-gray-400 dark:text-gray-500" />}
               </button>
 
               {expandedWeeks[week] && (
@@ -145,23 +145,23 @@ const Contributions: React.FC = () => {
                       key={c.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between"
+                      className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between transition-colors duration-300"
                     >
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                           <DollarSign size={24} />
                         </div>
                         <div>
-                          <h4 className="font-bold text-gray-900 truncate max-w-[150px]">{c.profiles?.name}</h4>
-                          <div className="flex items-center text-gray-500 text-xs mt-0.5">
+                          <h4 className="font-bold text-gray-900 dark:text-white truncate max-w-[150px]">{c.profiles?.name}</h4>
+                          <div className="flex items-center text-gray-500 dark:text-gray-400 text-xs mt-0.5">
                             <Calendar size={12} className="mr-1" />
                             <span>{format(new Date(c.date), 'MMM d, yyyy')}</span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-emerald-600">{formatCurrency(c.amount)}</p>
-                        <div className="flex items-center justify-end text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+                        <p className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(c.amount)}</p>
+                        <div className="flex items-center justify-end text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-1">
                           <ArrowUpRight size={10} className="mr-0.5" />
                           <span>Success</span>
                         </div>
@@ -173,7 +173,7 @@ const Contributions: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="text-center py-12 text-gray-400 italic">
+          <div className="text-center py-12 text-gray-400 dark:text-gray-500 italic">
             No records found
           </div>
         )}

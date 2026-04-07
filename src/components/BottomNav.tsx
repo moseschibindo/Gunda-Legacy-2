@@ -19,8 +19,8 @@ const BottomNav: React.FC = () => {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 flex justify-center z-40 pointer-events-none lg:hidden">
-      <nav className="w-full max-w-5xl bg-white border-t border-gray-200 px-4 py-2 flex justify-around items-center pointer-events-auto pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+    <div className="flex justify-center z-40 md:hidden transition-colors duration-300">
+      <nav className="w-full max-w-5xl bg-white dark:bg-[#111111] border-t border-gray-200 dark:border-gray-800 px-4 py-2 flex justify-around items-center pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         {navItems.map((item) => (
         <NavLink
           key={item.to}
@@ -28,7 +28,7 @@ const BottomNav: React.FC = () => {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center space-y-1 transition-colors duration-200",
-              isActive ? "text-emerald-600" : "text-gray-400 hover:text-gray-600"
+              isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             )
           }
         >

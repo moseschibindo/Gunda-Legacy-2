@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Phone, Mail, Camera, LogOut, Shield, CheckCircle, Loader2, Quote, TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, X, ShieldAlert, Plus, Edit2, Save } from 'lucide-react';
+import { User, Phone, Mail, Camera, LogOut, Shield, CheckCircle, Loader2, Quote, TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, X, ShieldAlert, Plus, Edit2, Save, Moon, Sun } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
+import { useTheme } from '../context/ThemeContext';
 import { cn, formatCurrency } from '../lib/utils';
 import { format } from 'date-fns';
 
 const Profile: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -211,7 +213,16 @@ const Profile: React.FC = () => {
 
   return (
     <div className="p-4 space-y-6 pb-24">
-      <h2 className="text-2xl font-bold text-gray-900">My Profile</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Profile</h2>
+        <button
+          onClick={toggleTheme}
+          className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
+          aria-label="Toggle theme"
+        >
+          {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+        </button>
+      </div>
 
       {isProfileIncomplete && (
         <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start space-x-3">
@@ -240,13 +251,13 @@ const Profile: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-8 flex flex-col items-center"
+        className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm p-8 flex flex-col items-center transition-colors duration-300"
       >
         <div className="relative">
           <div 
             onClick={() => profile?.profile_picture && setShowImageModal(profile.profile_picture)}
             className={cn(
-              "w-32 h-32 rounded-[32px] bg-emerald-100 border-4 border-white shadow-xl overflow-hidden",
+              "w-32 h-32 rounded-[32px] bg-emerald-100 dark:bg-emerald-900/30 border-4 border-white dark:border-gray-800 shadow-xl overflow-hidden",
               profile?.profile_picture && "cursor-pointer"
             )}
           >
@@ -269,16 +280,16 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="text-center mt-6">
-          <h3 className="text-2xl font-bold text-gray-900">{profile?.name}</h3>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{profile?.name}</h3>
           <div className="flex items-center justify-center space-x-2 mt-2">
             <span className={cn(
               "text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full flex items-center",
-              profile?.role === 'admin' ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+              profile?.role === 'admin' ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
             )}>
               <Shield size={10} className="mr-1" />
               {profile?.role}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 flex items-center">
+            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center">
               <CheckCircle size={10} className="mr-1" />
               Active
             </span>
@@ -288,40 +299,40 @@ const Profile: React.FC = () => {
         {!editing ? (
           <div className="w-full space-y-4 mt-8">
             <div className="grid grid-cols-1 gap-3">
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-emerald-100 transition-colors">
-                <div className="text-emerald-600 bg-white p-2.5 rounded-xl shadow-sm">
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/50 transition-colors">
+                <div className="text-emerald-600 dark:text-emerald-400 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-sm">
                   <User size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Full Name</p>
-                  <p className="text-gray-900 font-bold">{profile?.name}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Full Name</p>
+                  <p className="text-gray-900 dark:text-white font-bold">{profile?.name}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-emerald-100 transition-colors">
-                <div className="text-emerald-600 bg-white p-2.5 rounded-xl shadow-sm">
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/50 transition-colors">
+                <div className="text-emerald-600 dark:text-emerald-400 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-sm">
                   <Phone size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Phone Number</p>
-                  <p className="text-gray-900 font-bold">{profile?.phone}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Phone Number</p>
+                  <p className="text-gray-900 dark:text-white font-bold">{profile?.phone}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-emerald-100 transition-colors">
-                <div className="text-emerald-600 bg-white p-2.5 rounded-xl shadow-sm">
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/50 transition-colors">
+                <div className="text-emerald-600 dark:text-emerald-400 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-sm">
                   <Mail size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email Address</p>
-                  <p className="text-gray-900 font-bold truncate max-w-[180px]">{profile?.email}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Email Address</p>
+                  <p className="text-gray-900 dark:text-white font-bold truncate max-w-[180px]">{profile?.email}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-emerald-100 transition-colors">
-                <div className="text-emerald-600 bg-white p-2.5 rounded-xl shadow-sm">
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-transparent hover:border-emerald-100 dark:hover:border-emerald-900/50 transition-colors">
+                <div className="text-emerald-600 dark:text-emerald-400 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-sm">
                   <Calendar size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Joined Date</p>
-                  <p className="text-gray-900 font-bold">
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Joined Date</p>
+                  <p className="text-gray-900 dark:text-white font-bold">
                     {profile?.created_at ? format(new Date(profile.created_at), 'MMMM d, yyyy') : 'N/A'}
                   </p>
                 </div>
@@ -330,7 +341,7 @@ const Profile: React.FC = () => {
             
             <button
               onClick={() => setEditing(true)}
-              className="w-full py-4 bg-white border-2 border-emerald-600 text-emerald-600 font-bold rounded-2xl hover:bg-emerald-50 transition-all active:scale-[0.98] mt-4"
+              className="w-full py-4 bg-white dark:bg-transparent border-2 border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all active:scale-[0.98] mt-4"
             >
               Edit Profile
             </button>
@@ -409,33 +420,33 @@ const Profile: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-6"
+        className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm p-6 transition-colors duration-300"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Savings Summary</h3>
-          <div className="bg-emerald-100 p-2 rounded-xl text-emerald-600">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Savings Summary</h3>
+          <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
             <Wallet size={20} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50">
-            <div className="flex items-center text-emerald-600 mb-1">
+          <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100/50 dark:border-emerald-900/20">
+            <div className="flex items-center text-emerald-600 dark:text-emerald-400 mb-1">
               <PieChart size={14} className="mr-1.5" />
               <span className="text-[10px] font-bold uppercase tracking-widest">Total Saved</span>
             </div>
             {savingsLoading ? (
-              <div className="h-8 w-24 bg-emerald-100 animate-pulse rounded-lg mt-1" />
+              <div className="h-8 w-24 bg-emerald-100 dark:bg-emerald-900/20 animate-pulse rounded-lg mt-1" />
             ) : (
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(totalSavings)}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalSavings)}</p>
             )}
           </div>
-          <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
-            <div className="flex items-center text-blue-600 mb-1">
+          <div className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100/50 dark:border-blue-900/20">
+            <div className="flex items-center text-blue-600 dark:text-blue-400 mb-1">
               <ArrowUpRight size={14} className="mr-1.5" />
               <span className="text-[10px] font-bold uppercase tracking-widest">Status</span>
             </div>
-            <p className="text-xl font-bold text-gray-900">On Track</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">On Track</p>
           </div>
         </div>
       </motion.div>
@@ -446,23 +457,23 @@ const Profile: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-6"
+          className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm p-6 transition-colors duration-300"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900">App Branding</h3>
-            <div className="bg-purple-100 p-2 rounded-xl text-purple-600">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">App Branding</h3>
+            <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-xl text-purple-600 dark:text-purple-400">
               <Shield size={20} />
             </div>
           </div>
 
           <div className="flex items-center space-x-6">
-            <div className="w-20 h-20 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
+            <div className="w-20 h-20 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden relative group">
               {logoUploading ? (
                 <Loader2 className="animate-spin text-emerald-600" size={24} />
               ) : settings.app_logo ? (
                 <img src={settings.app_logo} alt="App Logo" className="w-full h-full object-contain" />
               ) : (
-                <Camera size={24} className="text-gray-300" />
+                <Camera size={24} className="text-gray-300 dark:text-gray-600" />
               )}
               <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                 <Plus className="text-white" size={24} />
@@ -470,22 +481,22 @@ const Profile: React.FC = () => {
               </label>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900">App Logo</p>
-              <p className="text-xs text-gray-500 mt-1">Upload a logo to represent Gunda Legacy across the application.</p>
-              <p className="text-[10px] text-emerald-600 font-bold mt-2 uppercase tracking-wider">Admin Only</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">App Logo</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Upload a logo to represent Gunda Legacy across the application.</p>
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-2 uppercase tracking-wider">Admin Only</p>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-gray-100">
+          <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm font-bold text-gray-900">Weekly Motivation</p>
-                <p className="text-xs text-gray-500 mt-1">Set the motivational quote shown to all members.</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">Weekly Motivation</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Set the motivational quote shown to all members.</p>
               </div>
               {!motivationEditing ? (
                 <button 
                   onClick={() => setMotivationEditing(true)}
-                  className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                  className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors"
                 >
                   <Edit2 size={18} />
                 </button>
@@ -496,14 +507,14 @@ const Profile: React.FC = () => {
                       setMotivationEditing(false);
                       setMotivationInput(settings.weekly_motivation || '');
                     }}
-                    className="p-2 text-gray-400 hover:bg-gray-50 rounded-xl transition-colors"
+                    className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
                   >
                     <X size={18} />
                   </button>
                   <button 
                     onClick={handleUpdateMotivation}
                     disabled={motivationSaving}
-                    className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors disabled:opacity-50"
+                    className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors disabled:opacity-50"
                   >
                     {motivationSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                   </button>
@@ -515,11 +526,11 @@ const Profile: React.FC = () => {
               <textarea
                 value={motivationInput}
                 onChange={(e) => setMotivationInput(e.target.value)}
-                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all text-sm min-h-[100px] resize-none"
+                className="w-full p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all text-sm min-h-[100px] resize-none text-gray-900 dark:text-white"
                 placeholder="Enter a motivational quote..."
               />
             ) : (
-              <div className="p-4 bg-gray-50 rounded-2xl border border-transparent italic text-sm text-gray-600">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-transparent italic text-sm text-gray-600 dark:text-gray-400">
                 "{settings.weekly_motivation || 'No motivation set.'}"
               </div>
             )}
@@ -553,7 +564,7 @@ const Profile: React.FC = () => {
       <div className="space-y-3">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center space-x-3 p-5 bg-red-50 rounded-[24px] border border-red-100 text-red-600 font-bold hover:bg-red-100 transition-colors active:scale-[0.98]"
+          className="w-full flex items-center justify-center space-x-3 p-5 bg-red-50 dark:bg-red-900/10 rounded-[24px] border border-red-100 dark:border-red-900/20 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors active:scale-[0.98]"
         >
           <LogOut size={20} />
           <span>Sign Out of Gunda Legacy</span>

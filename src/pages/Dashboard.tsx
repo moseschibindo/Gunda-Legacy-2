@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Wallet, TrendingUp, History, Calendar, ArrowUpRight, AlertCircle, Users, PieChart, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Contribution } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -10,6 +11,7 @@ import { format, differenceInWeeks, addDays, startOfWeek } from 'date-fns';
 
 const Dashboard: React.FC = () => {
   const { user, profile } = useAuth();
+  const { theme } = useTheme();
   const [userContributions, setUserContributions] = useState<Contribution[]>([]);
   const [allContributions, setAllContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-24 transition-colors duration-300">
       {/* Welcome Section */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -147,10 +149,10 @@ const Dashboard: React.FC = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Hello, {profile?.name?.split(' ')[0]}!</h2>
-          <p className="text-gray-500 text-sm">Real-time Gunda Legacy Dashboard</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hello, {profile?.name?.split(' ')[0]}!</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Real-time Gunda Legacy Dashboard</p>
         </div>
-        <div className="bg-emerald-100 p-2 rounded-xl text-emerald-600">
+        <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
           <Calendar size={20} />
         </div>
       </motion.div>
@@ -159,7 +161,7 @@ const Dashboard: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-emerald-600 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 relative overflow-hidden"
+        className="bg-emerald-600 dark:bg-emerald-700 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 dark:shadow-none relative overflow-hidden"
       >
         <div className="relative z-10 space-y-6">
           <div className="flex justify-between items-start">
@@ -196,71 +198,71 @@ const Dashboard: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm"
+          className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300"
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="bg-blue-50 p-2 rounded-lg text-blue-600">
+            <div className="bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg text-blue-600 dark:text-blue-400">
               <History size={18} />
             </div>
-            <span className="text-blue-600 font-bold text-lg">{stats.userCount}</span>
+            <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">{stats.userCount}</span>
           </div>
-          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Your Payments</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Your Payments</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm"
+          className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300"
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="bg-orange-50 p-2 rounded-lg text-orange-600">
+            <div className="bg-orange-50 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600 dark:text-orange-400">
               <AlertCircle size={18} />
             </div>
-            <span className="text-orange-600 font-bold text-lg">{stats.missed}</span>
+            <span className="text-orange-600 dark:text-orange-400 font-bold text-lg">{stats.missed}</span>
           </div>
-          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Missed Sundays</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Missed Sundays</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm"
+          className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300"
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="bg-purple-50 p-2 rounded-lg text-purple-600">
+            <div className="bg-purple-50 dark:bg-purple-900/30 p-2 rounded-lg text-purple-600 dark:text-purple-400">
               <Users size={18} />
             </div>
-            <span className="text-purple-600 font-bold text-lg">{allContributions.length}</span>
+            <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">{allContributions.length}</span>
           </div>
-          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Family Records</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Family Records</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm"
+          className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300"
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="bg-emerald-50 p-2 rounded-lg text-emerald-600">
+            <div className="bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-lg text-emerald-600 dark:text-emerald-400">
               <TrendingUp size={18} />
             </div>
-            <span className="text-emerald-600 font-bold text-lg">{chartData.length}</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">{chartData.length}</span>
           </div>
-          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Weeks Active</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Weeks Active</p>
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Weekly Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm h-full"
+          className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm h-full transition-colors duration-300"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-gray-900 font-bold">Weekly Family Growth</h3>
-            <div className="flex items-center text-emerald-600 text-[10px] font-bold uppercase">
+            <h3 className="text-gray-900 dark:text-white font-bold">Weekly Family Growth</h3>
+            <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase">
               <TrendingUp size={12} className="mr-1" />
               From Week 1
             </div>
@@ -277,8 +279,15 @@ const Dashboard: React.FC = () => {
                 />
                 <YAxis hide />
                 <Tooltip 
-                  cursor={{ fill: '#f9fafb' }}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                  cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
+                  contentStyle={{ 
+                    borderRadius: '16px', 
+                    border: 'none', 
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                    backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff',
+                    color: theme === 'dark' ? '#ffffff' : '#000000'
+                  }}
+                  itemStyle={{ color: theme === 'dark' ? '#ffffff' : '#000000' }}
                   formatter={(value: number) => [formatCurrency(value), 'Total']}
                 />
                 <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
@@ -299,20 +308,20 @@ const Dashboard: React.FC = () => {
           className="space-y-4 h-full"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-gray-900 font-bold">Recent Family Activity</h3>
-            <Users size={18} className="text-gray-400" />
+            <h3 className="text-gray-900 dark:text-white font-bold">Recent Family Activity</h3>
+            <Users size={18} className="text-gray-400 dark:text-gray-500" />
           </div>
           
           <div className="space-y-3">
             {allContributions.length > 0 ? (
               allContributions.slice(0, 5).map((c) => (
-                <div key={c.id} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between shadow-sm">
+                <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm transition-colors duration-300">
                   <div className="flex items-center space-x-3 overflow-hidden">
                     <div 
                       onClick={() => (c.profiles as any)?.profile_picture && setShowImageModal((c.profiles as any).profile_picture)}
                       className={cn(
-                        "w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-gray-100",
-                        (c.profiles as any)?.profile_picture ? "cursor-pointer" : "bg-gray-50 flex items-center justify-center text-gray-400"
+                        "w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-gray-100 dark:border-gray-800",
+                        (c.profiles as any)?.profile_picture ? "cursor-pointer" : "bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500"
                       )}
                     >
                       {(c.profiles as any)?.profile_picture ? (
@@ -322,22 +331,22 @@ const Dashboard: React.FC = () => {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-gray-900 truncate">
+                      <p className="font-bold text-gray-900 dark:text-white truncate">
                         {c.user_id === user?.id ? 'You' : (c.profiles as any)?.name}
                       </p>
-                      <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">
+                      <p className="text-gray-500 dark:text-gray-400 text-[10px] font-medium uppercase tracking-wider">
                         {format(new Date(c.date), 'MMM d, yyyy')}
                       </p>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="font-bold text-gray-900">{formatCurrency(c.amount)}</p>
-                    <span className="text-[8px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold uppercase">Verified</span>
+                    <p className="font-bold text-gray-900 dark:text-white">{formatCurrency(c.amount)}</p>
+                    <span className="text-[8px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-bold uppercase">Verified</span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-400 italic">No activity recorded</div>
+              <div className="text-center py-8 text-gray-400 dark:text-gray-500 italic">No activity recorded</div>
             )}
           </div>
         </motion.div>

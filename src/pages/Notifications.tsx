@@ -128,13 +128,13 @@ const Notifications: React.FC = () => {
   }
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-24 transition-colors duration-300">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Notifications</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h2>
         {isAdmin && (
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-emerald-600 text-white p-2 rounded-xl shadow-lg shadow-emerald-200"
+            className="bg-emerald-600 dark:bg-emerald-700 text-white p-2 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none"
           >
             <Plus size={20} />
           </button>
@@ -148,27 +148,27 @@ const Notifications: React.FC = () => {
               key={n.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden group"
+              className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm relative overflow-hidden group transition-colors duration-300"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
-                    <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600 mt-1 ring-4 ring-emerald-50/50">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-2xl text-emerald-600 dark:text-emerald-400 mt-1 ring-4 ring-emerald-50/50 dark:ring-emerald-900/20">
                       <Bell size={20} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-bold text-gray-900 text-lg">{n.title}</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">{n.title}</h3>
                         {isAdmin && n.expires_at && (
-                          <span className="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                          <span className="text-[10px] bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                             Admin: Expires {format(new Date(n.expires_at), 'MMM d')}
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm mt-2 leading-relaxed">{n.message}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 leading-relaxed">{n.message}</p>
                       
                       <div className="flex items-center space-x-4 mt-4">
-                        <div className="flex items-center text-[11px] text-gray-400 font-medium">
+                        <div className="flex items-center text-[11px] text-gray-400 dark:text-gray-500 font-medium">
                           <Clock size={14} className="mr-1.5" />
                           {formatDistanceToNow(new Date(n.date), { addSuffix: true })}
                         </div>
@@ -188,8 +188,8 @@ const Notifications: React.FC = () => {
                               className={cn(
                                 "flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-all duration-300 border",
                                 hasReacted 
-                                  ? "bg-emerald-50 border-emerald-200 text-emerald-600 scale-105" 
-                                  : "bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100"
+                                  ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 scale-105" 
+                                  : "bg-gray-50 dark:bg-gray-800 border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                               )}
                             >
                               <span className="text-sm">{emoji}</span>
@@ -205,7 +205,7 @@ const Notifications: React.FC = () => {
                   {isAdmin && (
                     <button
                       onClick={() => handleDelete(n.id)}
-                      className="text-gray-300 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-xl"
+                      className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -219,10 +219,10 @@ const Notifications: React.FC = () => {
           ))
         ) : (
           <div className="text-center py-12">
-            <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+            <div className="bg-gray-50 dark:bg-gray-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300 dark:text-gray-600">
               <Bell size={32} />
             </div>
-            <p className="text-gray-400 italic">No active notifications</p>
+            <p className="text-gray-400 dark:text-gray-500 italic">No active notifications</p>
           </div>
         )}
       </div>
@@ -233,51 +233,51 @@ const Notifications: React.FC = () => {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl"
+            className="bg-white dark:bg-[#1a1a1a] w-full max-w-md rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">New Notification</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-400">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">New Notification</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-gray-400 dark:text-gray-500">
                 <X size={24} />
               </button>
             </div>
             <form onSubmit={handleAdd} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Title</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
                 <input
                   type="text"
                   required
                   value={newNotif.title}
                   onChange={(e) => setNewNotif({ ...newNotif, title: e.target.value })}
-                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-900 dark:text-white"
                   placeholder="Contribution Reminder"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Message</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
                 <textarea
                   required
                   value={newNotif.message}
                   onChange={(e) => setNewNotif({ ...newNotif, message: e.target.value })}
-                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none h-24"
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none h-24 text-gray-900 dark:text-white"
                   placeholder="Don't forget to send your KSh 50 today!"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Expiry Date (Optional)</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Date (Optional)</label>
                 <div className="relative">
                   <input
                     type="date"
                     value={newNotif.expires_at}
                     onChange={(e) => setNewNotif({ ...newNotif, expires_at: e.target.value })}
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-900 dark:text-white"
                   />
-                  <Calendar className="absolute right-3 top-3 text-gray-400 pointer-events-none" size={20} />
+                  <Calendar className="absolute right-3 top-3 text-gray-400 dark:text-gray-500 pointer-events-none" size={20} />
                 </div>
               </div>
               <button
                 type="submit"
-                className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 mt-4"
+                className="w-full py-3 bg-emerald-600 dark:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none mt-4"
               >
                 Post Notification
               </button>

@@ -65,12 +65,12 @@ const Header: React.FC = () => {
   }, [location.pathname]);
 
   return (
-    <header className="sticky top-0 z-30 bg-emerald-600 text-white px-4 py-3 flex items-center justify-between shadow-md">
+    <header className="relative z-30 bg-emerald-600 dark:bg-emerald-700 text-white px-4 py-3 flex items-center justify-between shadow-md transition-colors duration-300">
       <div className="flex items-center space-x-3">
         {settings.app_logo ? (
           <img src={settings.app_logo} alt="Logo" className="w-8 h-8 rounded-full border border-white/20" />
         ) : (
-          <div className="w-8 h-8 bg-white text-emerald-600 rounded-full flex items-center justify-center font-bold">
+          <div className="w-8 h-8 bg-white text-emerald-600 dark:text-emerald-700 rounded-full flex items-center justify-center font-bold">
             G
           </div>
         )}
@@ -78,16 +78,16 @@ const Header: React.FC = () => {
       </div>
       
       <div className="flex items-center space-x-4">
-        <Link to="/notifications" className="relative p-1 hover:bg-emerald-700 rounded-full transition-colors">
+        <Link to="/notifications" className="relative p-1 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors">
           <Bell size={24} />
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-emerald-600">
+            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-emerald-600 dark:border-emerald-700">
               {unreadCount}
             </span>
           )}
         </Link>
         <Link to="/profile">
-          <div className="w-8 h-8 rounded-full bg-emerald-500 border border-emerald-400 overflow-hidden">
+          <div className="w-8 h-8 rounded-full bg-emerald-500 dark:bg-emerald-600 border border-emerald-400 dark:border-emerald-500 overflow-hidden">
             {profile?.profile_picture ? (
               <img src={profile.profile_picture} alt="Profile" className="w-full h-full object-cover" />
             ) : (

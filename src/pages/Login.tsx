@@ -171,24 +171,24 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-6 transition-colors duration-300">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 border border-gray-100"
+        className="w-full max-w-md bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-xl p-8 border border-gray-100 dark:border-gray-800 transition-colors duration-300"
       >
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl font-bold">
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl font-bold">
             {settings.app_logo ? (
               <img src={settings.app_logo} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
             ) : (
               'G'
             )}
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isForgotPassword ? 'Reset Password' : isSignUp ? 'Join Gunda Legacy' : 'Welcome Back'}
           </h2>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
             {isForgotPassword ? 'Enter your phone or email to get a reset link' : settings.app_slogan}
           </p>
         </div>
@@ -198,34 +198,34 @@ const Login: React.FC = () => {
             {resetStep === 'verify' ? (
               <form onSubmit={handleResetVerify} className="space-y-5">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Email Address</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Email Address</label>
                   <div className="relative">
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                       placeholder="john@example.com"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <Mail size={18} />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Phone Number</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Phone Number</label>
                   <div className="relative">
                     <input
                       type="tel"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                       placeholder="0712345678"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <Phone size={18} />
                     </div>
                   </div>
@@ -235,7 +235,7 @@ const Login: React.FC = () => {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-xl border border-red-100"
+                    className="text-red-500 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-900/30"
                   >
                     {error}
                   </motion.p>
@@ -244,7 +244,7 @@ const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center space-x-2 disabled:opacity-70"
+                  className="w-full py-3 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all flex items-center justify-center space-x-2 disabled:opacity-70"
                 >
                   {loading ? (
                     <Loader2 className="animate-spin" size={20} />
@@ -256,23 +256,23 @@ const Login: React.FC = () => {
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-5">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">New Password</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">New Password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      className="w-full pl-11 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                       placeholder="••••••••"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <Lock size={18} />
                     </div>
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-600 transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -280,17 +280,17 @@ const Login: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Confirm New Password</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Confirm New Password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={confirmNewPassword}
                       onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      className="w-full pl-11 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                       placeholder="••••••••"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <Lock size={18} />
                     </div>
                   </div>
@@ -300,7 +300,7 @@ const Login: React.FC = () => {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-xl border border-red-100"
+                    className="text-red-500 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-900/30"
                   >
                     {error}
                   </motion.p>
@@ -310,7 +310,7 @@ const Login: React.FC = () => {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-emerald-600 text-sm text-center bg-emerald-50 p-3 rounded-xl border border-emerald-100 font-medium"
+                    className="text-emerald-600 dark:text-emerald-400 text-sm text-center bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/30 font-medium"
                   >
                     {success}
                   </motion.p>
@@ -319,7 +319,7 @@ const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center space-x-2 disabled:opacity-70"
+                  className="w-full py-3 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all flex items-center justify-center space-x-2 disabled:opacity-70"
                 >
                   {loading ? (
                     <Loader2 className="animate-spin" size={20} />
@@ -338,7 +338,7 @@ const Login: React.FC = () => {
                 setError(null);
                 setSuccess(null);
               }}
-              className="w-full flex items-center justify-center space-x-2 text-gray-500 hover:text-emerald-600 transition-colors font-medium"
+              className="w-full flex items-center justify-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium"
             >
               <ArrowLeft size={18} />
               <span>Back to Login</span>
@@ -349,51 +349,51 @@ const Login: React.FC = () => {
             {isSignUp ? (
               <>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Username (Full Name)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Username (Full Name)</label>
                   <div className="relative">
                     <input
                       type="text"
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                       placeholder="John Doe"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <ArrowRight size={18} />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Email Address</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Email Address</label>
                   <div className="relative">
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                       placeholder="john@example.com"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <Mail size={18} />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Phone Number</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Phone Number</label>
                   <div className="relative">
                     <input
                       type="tel"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                       placeholder="0712345678"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <Phone size={18} />
                     </div>
                   </div>
@@ -401,17 +401,17 @@ const Login: React.FC = () => {
               </>
             ) : (
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700 ml-1">Phone Number</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Phone Number</label>
                 <div className="relative">
                   <input
                     type="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                     placeholder="0712345678"
                   />
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                     <Phone size={18} />
                   </div>
                 </div>
@@ -420,12 +420,12 @@ const Login: React.FC = () => {
 
             <div className="space-y-1">
               <div className="flex items-center justify-between ml-1">
-                <label className="text-sm font-medium text-gray-700">Password</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
                 {!isSignUp && (
                   <button
                     type="button"
                     onClick={() => setIsForgotPassword(true)}
-                    className="text-xs font-bold text-emerald-600 hover:underline"
+                    className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
                   >
                     Forgot Password?
                   </button>
@@ -437,16 +437,16 @@ const Login: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                  className="w-full pl-11 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none text-gray-900 dark:text-white"
                   placeholder="••••••••"
                 />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                   <Lock size={18} />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -457,7 +457,7 @@ const Login: React.FC = () => {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-xl border border-red-100"
+                className="text-red-500 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-900/30"
               >
                 {error}
               </motion.p>
@@ -467,7 +467,7 @@ const Login: React.FC = () => {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-emerald-600 text-sm text-center bg-emerald-50 p-3 rounded-xl border border-emerald-100 font-medium"
+                className="text-emerald-600 dark:text-emerald-400 text-sm text-center bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/30 font-medium"
               >
                 {success}
               </motion.p>
@@ -476,7 +476,7 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center space-x-2 disabled:opacity-70"
+              className="w-full py-3 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all flex items-center justify-center space-x-2 disabled:opacity-70"
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={20} />
@@ -490,7 +490,7 @@ const Login: React.FC = () => {
         <div className="mt-8 text-center">
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-emerald-600 font-medium hover:underline"
+            className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
           >
             {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
           </button>

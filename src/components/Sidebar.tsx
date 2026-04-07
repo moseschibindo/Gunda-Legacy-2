@@ -82,8 +82,8 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200 h-screen sticky top-0">
-      <div className="p-6 border-b border-gray-100">
+    <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-[#111111] border-r border-gray-200 dark:border-gray-800 h-screen sticky top-0 transition-colors duration-300">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center space-x-3">
           {settings.app_logo ? (
             <img src={settings.app_logo} alt="Logo" className="w-10 h-10 rounded-xl" />
@@ -93,8 +93,8 @@ const Sidebar: React.FC = () => {
             </div>
           )}
           <div>
-            <h1 className="font-bold text-gray-900 truncate">{settings.app_name}</h1>
-            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Legacy Platform</p>
+            <h1 className="font-bold text-gray-900 dark:text-white truncate">{settings.app_name}</h1>
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest">Legacy Platform</p>
           </div>
         </div>
       </div>
@@ -108,8 +108,8 @@ const Sidebar: React.FC = () => {
               cn(
                 "flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all font-bold",
                 isActive 
-                  ? "bg-emerald-50 text-emerald-600 shadow-sm" 
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                  ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 shadow-sm" 
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-700 dark:hover:text-gray-200"
               )
             }
           >
@@ -124,25 +124,25 @@ const Sidebar: React.FC = () => {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-gray-100">
-        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-2xl mb-4">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 overflow-hidden border border-emerald-200">
+      <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl mb-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 overflow-hidden border border-emerald-200 dark:border-emerald-800">
             {profile?.profile_picture ? (
               <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-emerald-600 font-bold">
+              <div className="w-full h-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold">
                 {profile?.name?.charAt(0)}
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-gray-900 truncate">{profile?.name}</p>
-            <p className="text-[10px] text-gray-400 font-bold uppercase truncate">{profile?.role}</p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{profile?.name}</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase truncate">{profile?.role}</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl transition-colors font-bold text-sm"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors font-bold text-sm"
         >
           <LogOut size={20} />
           <span>Sign Out</span>
