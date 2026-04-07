@@ -91,6 +91,21 @@ async function startServer() {
     }
   });
 
+  // Admin: Update App Settings
+  app.post('/api/admin/update-settings', verifyAdmin, async (req, res) => {
+    const { key, value } = req.body;
+    try {
+      const { error } = await supabaseAdmin
+        .from('settings')
+        .upsert({ key, value }, { onConflict: 'key' });
+      
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Admin: Delete User (Profile + Auth Account)
   app.post('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     const { userId } = req.body;

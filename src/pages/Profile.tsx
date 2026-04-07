@@ -159,14 +159,20 @@ const Profile: React.FC = () => {
         .from('profiles')
         .getPublicUrl(filePath);
 
-      const { error: settingsError } = await supabase
-        .from('settings')
-        .upsert({ key: 'app_logo', value: publicUrl }, { onConflict: 'key' });
+      const response = await fetch('/api/admin/update-settings', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({ key: 'app_logo', value: publicUrl })
+      });
       
-      if (!settingsError) {
+      if (response.ok) {
         await refreshSettings();
       } else {
-        setError(settingsError.message);
+        const data = await response.json();
+        setError(data.error || 'Failed to update logo');
       }
     }
     setLogoUploading(false);
@@ -175,15 +181,26 @@ const Profile: React.FC = () => {
   const handleUpdateMotivation = async () => {
     if (profile?.role !== 'admin') return;
     setMotivationSaving(true);
-    const { error } = await supabase
-      .from('settings')
-      .upsert({ key: 'weekly_motivation', value: motivationInput }, { onConflict: 'key' });
     
-    if (!error) {
-      await refreshSettings();
-      setMotivationEditing(false);
-    } else {
-      setError(error.message);
+    try {
+      const response = await fetch('/api/admin/update-settings', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({ key: 'weekly_motivation', value: motivationInput })
+      });
+      
+      if (response.ok) {
+        await refreshSettings();
+        setMotivationEditing(false);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to update motivation');
+      }
+    } catch (err: any) {
+      setError(err.message);
     }
     setMotivationSaving(false);
   };
