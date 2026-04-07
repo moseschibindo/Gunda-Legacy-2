@@ -65,12 +65,24 @@ const Login: React.FC = () => {
       } else {
         // Sign In: Phone and Password
         // Find email by phone number via server-side API (to bypass RLS)
-        const response = await fetch('/api/auth/get-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone })
-        });
+        let response;
+        try {
+          response = await fetch('/api/auth/get-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone })
+          });
+        } catch (fetchErr) {
+          throw new Error('Network error: Could not reach the server. Please ensure the server is running.');
+        }
         
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Server returned non-JSON response:', text);
+          throw new Error('Server error: Received an invalid response from the server. This usually means a route is missing or the server is misconfigured.');
+        }
+
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'No account found with this phone number');
 
@@ -99,6 +111,11 @@ const Login: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, phone })
       });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server error: Received an invalid response from the server.');
+      }
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Verification failed');
@@ -129,6 +146,11 @@ const Login: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: resetUserId, newPassword })
       });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server error: Received an invalid response from the server.');
+      }
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Reset failed');
