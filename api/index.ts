@@ -136,6 +136,66 @@ app.post('/api/admin/delete-user', verifyAdmin, async (req, res) => {
   }
 });
 
+// Notification Reactions: Enforce single reaction per user
+app.post('/api/notifications/react', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+
+  const token = authHeader.split(' ')[1];
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+  if (authError || !user) return res.status(401).json({ error: 'Invalid session' });
+
+  const { notifId, emoji } = req.body;
+  const userId = user.id;
+
+  try {
+    // Get current notification data
+    const { data: notif, error: fetchError } = await supabaseAdmin
+      .from('notifications')
+      .select('reactions')
+      .eq('id', notifId)
+      .single();
+
+    if (fetchError || !notif) throw new Error('Notification not found');
+
+    const currentReactions: Record<string, string[]> = notif.reactions || {};
+    const updatedReactions: Record<string, string[]> = {};
+
+    // 1. Remove user's ID from ALL existing reactions (Enforce single reaction)
+    Object.keys(currentReactions).forEach(key => {
+      updatedReactions[key] = (currentReactions[key] || []).filter(id => id !== userId);
+    });
+
+    // 2. If the user clicked a different emoji (or didn't have one), add it
+    // If they clicked the SAME emoji they already had, it stays removed (toggle off)
+    const alreadyHadThisEmoji = (currentReactions[emoji] || []).includes(userId);
+    
+    if (!alreadyHadThisEmoji) {
+      if (!updatedReactions[emoji]) updatedReactions[emoji] = [];
+      updatedReactions[emoji].push(userId);
+    }
+
+    // 3. Clean up empty arrays to save space
+    const cleanedReactions: Record<string, string[]> = {};
+    Object.keys(updatedReactions).forEach(key => {
+      if (updatedReactions[key].length > 0) {
+        cleanedReactions[key] = updatedReactions[key];
+      }
+    });
+
+    const { error: updateError } = await supabaseAdmin
+      .from('notifications')
+      .update({ reactions: cleanedReactions })
+      .eq('id', notifId);
+
+    if (updateError) throw updateError;
+
+    res.json({ success: true, reactions: cleanedReactions });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // App Settings Update (Motivation, Logo, etc)
 app.post('/api/admin/update-settings', verifyAdmin, async (req, res) => {
   const { key, value } = req.body;

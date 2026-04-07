@@ -27,6 +27,7 @@ export interface Notification {
   message: string;
   date: string;
   expires_at: string | null;
+  reactions?: Record<string, string[]>; // emoji -> array of user IDs
 }
 
 export interface AppSetting {

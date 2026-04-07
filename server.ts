@@ -126,6 +126,61 @@ async function startServer() {
     }
   });
 
+  // Notification Reactions: Enforce single reaction per user
+  app.post('/api/notifications/react', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) return res.status(401).json({ error: 'Invalid session' });
+
+    const { notifId, emoji } = req.body;
+    const userId = user.id;
+
+    try {
+      const { data: notif, error: fetchError } = await supabaseAdmin
+        .from('notifications')
+        .select('reactions')
+        .eq('id', notifId)
+        .single();
+
+      if (fetchError || !notif) throw new Error('Notification not found');
+
+      const currentReactions: Record<string, string[]> = notif.reactions || {};
+      const updatedReactions: Record<string, string[]> = {};
+
+      Object.keys(currentReactions).forEach(key => {
+        updatedReactions[key] = (currentReactions[key] || []).filter(id => id !== userId);
+      });
+
+      const alreadyHadThisEmoji = (currentReactions[emoji] || []).includes(userId);
+      
+      if (!alreadyHadThisEmoji) {
+        if (!updatedReactions[emoji]) updatedReactions[emoji] = [];
+        updatedReactions[emoji].push(userId);
+      }
+
+      const cleanedReactions: Record<string, string[]> = {};
+      Object.keys(updatedReactions).forEach(key => {
+        if (updatedReactions[key].length > 0) {
+          cleanedReactions[key] = updatedReactions[key];
+        }
+      });
+
+      const { error: updateError } = await supabaseAdmin
+        .from('notifications')
+        .update({ reactions: cleanedReactions })
+        .eq('id', notifId);
+
+      if (updateError) throw updateError;
+
+      res.json({ success: true, reactions: cleanedReactions });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Auth: Get email by phone (for login)
   app.post('/api/auth/get-email', async (req, res) => {
     const { phone } = req.body;
