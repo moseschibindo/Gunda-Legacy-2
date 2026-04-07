@@ -11,12 +11,13 @@ import ConfirmModal from '../components/ConfirmModal';
 
 const Admin: React.FC = () => {
   const { settings, refreshSettings } = useSettings();
-  const { profile: currentProfile } = useAuth();
+  const { profile: currentProfile, user: authUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'users' | 'contributions' | 'settings'>('users');
   const [users, setUsers] = useState<Profile[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   
   // Modals
   const [showAddContribution, setShowAddContribution] = useState(false);
@@ -56,6 +57,11 @@ const Admin: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Close menu when clicking outside
+    const handleClickOutside = () => setActiveMenu(null);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
   const handleAddContribution = async (e: React.FormEvent) => {
@@ -75,12 +81,34 @@ const Admin: React.FC = () => {
     }
   };
 
+  const adminAction = async (endpoint: string, body: any) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Action failed');
+    return data;
+  };
+
   const toggleUserSuspension = async (user: Profile) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ is_suspended: !user.is_suspended })
-      .eq('id', user.id);
-    if (!error) fetchData();
+    setLoading(true);
+    try {
+      await adminAction('/api/admin/update-user', {
+        userId: user.id,
+        updates: { is_suspended: !user.is_suspended }
+      });
+      fetchData();
+    } catch (err: any) {
+      setAlertModal({ title: 'Error', message: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleUserRole = async (user: Profile) => {
@@ -91,12 +119,19 @@ const Admin: React.FC = () => {
       });
       return;
     }
-    const newRole = user.role === 'admin' ? 'member' : 'admin';
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role: newRole })
-      .eq('id', user.id);
-    if (!error) fetchData();
+    setLoading(true);
+    try {
+      const newRole = user.role === 'admin' ? 'member' : 'admin';
+      await adminAction('/api/admin/update-user', {
+        userId: user.id,
+        updates: { role: newRole }
+      });
+      fetchData();
+    } catch (err: any) {
+      setAlertModal({ title: 'Error', message: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteUser = async (user: Profile) => {
@@ -111,28 +146,18 @@ const Admin: React.FC = () => {
     setConfirmModal({
       isOpen: true,
       title: 'Delete Member',
-      message: `Are you sure you want to delete ${user.name}? This will remove their profile and all their contribution records. This action cannot be undone.`,
+      message: `Are you sure you want to delete ${user.name}? This will remove their profile, all their contribution records, and their login account. This action cannot be undone.`,
       isDanger: true,
       onConfirm: async () => {
         setLoading(true);
         try {
-          // Delete contributions first to avoid foreign key constraints
-          await supabase.from('contributions').delete().eq('user_id', user.id);
-          
-          // Delete profile
-          const { error } = await supabase
-            .from('profiles')
-            .delete()
-            .eq('id', user.id);
-          
-          if (error) throw error;
-          
+          await adminAction('/api/admin/delete-user', { userId: user.id });
           fetchData();
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error deleting user:', error);
           setAlertModal({
             title: "Error",
-            message: "Failed to delete user. Please try again."
+            message: error.message || "Failed to delete user."
           });
         } finally {
           setLoading(false);
@@ -256,21 +281,33 @@ const Admin: React.FC = () => {
                     >
                       <Plus size={18} />
                     </button>
-                    <div className="relative group">
-                      <button className="p-2 bg-gray-50 text-gray-400 rounded-xl">
+                    <div className="relative">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(activeMenu === u.id ? null : u.id);
+                        }}
+                        className={cn(
+                          "p-2 rounded-xl transition-colors",
+                          activeMenu === u.id ? "bg-emerald-600 text-white" : "bg-gray-50 text-gray-400 hover:text-emerald-600"
+                        )}
+                      >
                         <Settings size={18} />
                       </button>
-                      <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 hidden group-hover:block z-20 p-2">
+                      <div className={cn(
+                        "absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-20 p-2 transition-all transform origin-top-right",
+                        activeMenu === u.id ? "scale-100 opacity-100 visible" : "scale-95 opacity-0 invisible"
+                      )}>
                         <button
                           onClick={() => toggleUserRole(u)}
-                          className="w-full flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-xl text-sm text-gray-700"
+                          className="w-full flex items-center space-x-2 p-3 hover:bg-gray-50 rounded-xl text-sm text-gray-700"
                         >
                           {u.role === 'admin' ? <UserMinus size={16} /> : <ShieldAlert size={16} />}
                           <span>{u.role === 'admin' ? 'Demote to Member' : 'Promote to Admin'}</span>
                         </button>
                         <button
                           onClick={() => toggleUserSuspension(u)}
-                          className="w-full flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-xl text-sm text-gray-700"
+                          className="w-full flex items-center space-x-2 p-3 hover:bg-gray-50 rounded-xl text-sm text-gray-700"
                         >
                           <ShieldAlert size={16} />
                           <span>{u.is_suspended ? 'Unsuspend' : 'Suspend'}</span>
@@ -278,7 +315,7 @@ const Admin: React.FC = () => {
                         <div className="h-px bg-gray-100 my-1 mx-2" />
                         <button
                           onClick={() => deleteUser(u)}
-                          className="w-full flex items-center space-x-2 p-2 hover:bg-red-50 rounded-xl text-sm text-red-600"
+                          className="w-full flex items-center space-x-2 p-3 hover:bg-red-50 rounded-xl text-sm text-red-600"
                         >
                           <Trash2 size={16} />
                           <span>Delete Member</span>
@@ -375,6 +412,15 @@ const Admin: React.FC = () => {
                   type="text"
                   defaultValue={settings.app_slogan}
                   onBlur={(e) => updateSetting('app_slogan', e.target.value)}
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-400 uppercase">Cost Per Share (KSh)</label>
+                <input
+                  type="number"
+                  defaultValue={settings.share_value}
+                  onBlur={(e) => updateSetting('share_value', e.target.value)}
                   className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>

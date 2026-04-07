@@ -16,6 +16,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     app_slogan: 'Secure Your Future, Together',
     app_logo: '',
     hero_image: '',
+    share_value: '25',
+    weekly_motivation: 'Small steps lead to big changes. Keep saving!',
   });
   const [loading, setLoading] = useState(true);
 

@@ -13,7 +13,7 @@ const Contributions: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'recent' | 'large'>('all');
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({});
 
-  const BASE_DATE = new Date('2026-04-05T00:00:00Z'); // Sunday, April 5th, 2026
+  const BASE_DATE = new Date('2026-04-06T00:00:00Z'); // Monday, April 6th, 2026
 
   useEffect(() => {
     const fetchContributions = async () => {
@@ -38,10 +38,14 @@ const Contributions: React.FC = () => {
 
   const getWeekKey = (date: Date) => {
     const d = new Date(date);
-    if (d < BASE_DATE) return 'Pre-Launch';
+    
+    // Everything before Monday, April 6th is Week 1
+    if (d < BASE_DATE) {
+      return 'Week 1: Launch - Apr 5, 2026';
+    }
     
     const weeksDiff = differenceInWeeks(d, BASE_DATE);
-    const weekNum = weeksDiff + 1;
+    const weekNum = weeksDiff + 2; // New flow starts from Week 2
     const weekStart = addDays(BASE_DATE, weeksDiff * 7);
     const weekEnd = addDays(weekStart, 6);
     
@@ -124,6 +128,9 @@ const Contributions: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <div className="w-1 h-4 bg-emerald-500 rounded-full" />
                   <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">{week}</h3>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold">
+                    {formatCurrency(items.reduce((acc, curr) => acc + curr.amount, 0))}
+                  </span>
                   <span className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full font-bold">
                     {items.length} {items.length === 1 ? 'Record' : 'Records'}
                   </span>

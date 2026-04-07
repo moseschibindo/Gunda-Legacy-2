@@ -29,7 +29,7 @@ const Login: React.FC = () => {
 
     try {
       if (isSignUp) {
-        // Use real email for Auth to support password reset
+        // Sign Up: Username (name), Email, Phone, Password
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: email,
           password,
@@ -59,30 +59,23 @@ const Login: React.FC = () => {
           }
         }
 
-        setSuccess("Account created successfully! Please sign in with your email/phone and password.");
+        setSuccess("Account created successfully! Please sign in with your phone number and password.");
         setIsSignUp(false);
         setPassword('');
       } else {
-        // Try to find email by phone if phone is provided
-        let loginEmail = phone;
-        if (!phone.includes('@')) {
-          // It's a phone number, try to find the associated email
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('phone', phone)
-            .single();
-          
-          if (profileData) {
-            loginEmail = profileData.email;
-          } else {
-            // Fallback to legacy dummy email for older accounts
-            loginEmail = `${phone.replace(/\+/g, '')}@gunda.app`;
-          }
-        }
+        // Sign In: Phone and Password
+        // Find email by phone number via server-side API (to bypass RLS)
+        const response = await fetch('/api/auth/get-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'No account found with this phone number');
 
         const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: loginEmail,
+          email: data.email,
           password,
         });
         if (signInError) throw signInError;
@@ -331,10 +324,10 @@ const Login: React.FC = () => {
           </div>
         ) : (
           <form onSubmit={handleAuth} className="space-y-5">
-            {isSignUp && (
+            {isSignUp ? (
               <>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Full Names</label>
+                  <label className="text-sm font-medium text-gray-700 ml-1">Username (Full Name)</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -362,38 +355,46 @@ const Login: React.FC = () => {
                       placeholder="john@example.com"
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                      <ArrowRight size={18} />
+                      <Mail size={18} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-700 ml-1">Phone Number</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                      placeholder="0712345678"
+                    />
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <Phone size={18} />
                     </div>
                   </div>
                 </div>
               </>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 ml-1">Phone or Email</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  value={phone || email}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.includes('@')) {
-                      setEmail(val);
-                      setPhone('');
-                    } else {
-                      setPhone(val);
-                      setEmail('');
-                    }
-                  }}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
-                  placeholder="0712345678 or john@example.com"
-                />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  {phone ? <Phone size={18} /> : <Mail size={18} />}
+            ) : (
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 ml-1">Phone Number</label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
+                    placeholder="0712345678"
+                  />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Phone size={18} />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-1">
               <div className="flex items-center justify-between ml-1">

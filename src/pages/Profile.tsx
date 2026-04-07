@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Phone, Mail, Camera, LogOut, Shield, CheckCircle, Loader2, Quote, TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, X, ShieldAlert, Plus } from 'lucide-react';
+import { User, Phone, Mail, Camera, LogOut, Shield, CheckCircle, Loader2, Quote, TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, X, ShieldAlert, Plus, Edit2, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
@@ -24,6 +24,9 @@ const Profile: React.FC = () => {
   const [savingsLoading, setSavingsLoading] = useState(true);
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const { settings, refreshSettings } = useSettings();
+  const [motivationEditing, setMotivationEditing] = useState(false);
+  const [motivationInput, setMotivationInput] = useState(settings.weekly_motivation || '');
+  const [motivationSaving, setMotivationSaving] = useState(false);
 
   const isProfileIncomplete = !profile?.name || !profile?.email;
 
@@ -39,11 +42,16 @@ const Profile: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Pick a quote based on the day of the year to keep it "weekly" or consistent
-    const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    const quoteIndex = Math.floor(dayOfYear / 7) % quotes.length;
-    setQuote(quotes[quoteIndex]);
-  }, []);
+    if (settings.weekly_motivation) {
+      setQuote(settings.weekly_motivation);
+      setMotivationInput(settings.weekly_motivation);
+    } else {
+      // Pick a quote based on the day of the year to keep it "weekly" or consistent
+      const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+      const quoteIndex = Math.floor(dayOfYear / 7) % quotes.length;
+      setQuote(quotes[quoteIndex]);
+    }
+  }, [settings.weekly_motivation]);
 
   useEffect(() => {
     if (profile) {
@@ -162,6 +170,22 @@ const Profile: React.FC = () => {
       }
     }
     setLogoUploading(false);
+  };
+
+  const handleUpdateMotivation = async () => {
+    if (profile?.role !== 'admin') return;
+    setMotivationSaving(true);
+    const { error } = await supabase
+      .from('settings')
+      .upsert({ key: 'weekly_motivation', value: motivationInput }, { onConflict: 'key' });
+    
+    if (!error) {
+      await refreshSettings();
+      setMotivationEditing(false);
+    } else {
+      setError(error.message);
+    }
+    setMotivationSaving(false);
   };
 
   const handleLogout = async () => {
@@ -433,6 +457,55 @@ const Profile: React.FC = () => {
               <p className="text-xs text-gray-500 mt-1">Upload a logo to represent Gunda Legacy across the application.</p>
               <p className="text-[10px] text-emerald-600 font-bold mt-2 uppercase tracking-wider">Admin Only</p>
             </div>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-bold text-gray-900">Weekly Motivation</p>
+                <p className="text-xs text-gray-500 mt-1">Set the motivational quote shown to all members.</p>
+              </div>
+              {!motivationEditing ? (
+                <button 
+                  onClick={() => setMotivationEditing(true)}
+                  className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                >
+                  <Edit2 size={18} />
+                </button>
+              ) : (
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => {
+                      setMotivationEditing(false);
+                      setMotivationInput(settings.weekly_motivation || '');
+                    }}
+                    className="p-2 text-gray-400 hover:bg-gray-50 rounded-xl transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                  <button 
+                    onClick={handleUpdateMotivation}
+                    disabled={motivationSaving}
+                    className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    {motivationSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {motivationEditing ? (
+              <textarea
+                value={motivationInput}
+                onChange={(e) => setMotivationInput(e.target.value)}
+                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all text-sm min-h-[100px] resize-none"
+                placeholder="Enter a motivational quote..."
+              />
+            ) : (
+              <div className="p-4 bg-gray-50 rounded-2xl border border-transparent italic text-sm text-gray-600">
+                "{settings.weekly_motivation || 'No motivation set.'}"
+              </div>
+            )}
           </div>
         </motion.div>
       )}

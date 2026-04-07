@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
     groupShares: 0,
   });
 
-  const BASE_DATE = new Date('2026-04-05T00:00:00Z'); // Sunday, April 5th, 2026
+  const BASE_DATE = new Date('2026-04-06T00:00:00Z'); // Monday, April 6th, 2026
 
   const SHARE_VALUE = 25; // 1 share = 25 KSh
 
@@ -94,23 +94,31 @@ const Dashboard: React.FC = () => {
 
   // Weekly chart data starting from BASE_DATE
   const getWeeklyChartData = () => {
-    const weeklyData: Record<string, number> = {};
+    const weeklyData: Record<string, number> = { 'W1': 0 };
     const now = new Date();
-    const totalWeeks = Math.max(1, differenceInWeeks(now, BASE_DATE) + 1);
+    
+    // Sum all before BASE_DATE into W1
+    allContributions.forEach(c => {
+      const d = new Date(c.date);
+      if (d < BASE_DATE) {
+        weeklyData['W1'] += c.amount;
+      }
+    });
 
-    // Initialize weeks
-    for (let i = 0; i < totalWeeks; i++) {
-      const weekStart = addDays(BASE_DATE, i * 7);
-      const label = `W${i + 1}`;
+    const totalWeeksAfter = Math.max(0, differenceInWeeks(now, BASE_DATE) + 1);
+
+    // Initialize weeks after BASE_DATE
+    for (let i = 0; i < totalWeeksAfter; i++) {
+      const label = `W${i + 2}`;
       weeklyData[label] = 0;
     }
 
-    // Fill with data
+    // Fill with data after BASE_DATE
     allContributions.forEach(c => {
       const d = new Date(c.date);
       if (d >= BASE_DATE) {
         const weekIdx = differenceInWeeks(d, BASE_DATE);
-        const label = `W${weekIdx + 1}`;
+        const label = `W${weekIdx + 2}`;
         if (weeklyData[label] !== undefined) {
           weeklyData[label] += c.amount;
         }

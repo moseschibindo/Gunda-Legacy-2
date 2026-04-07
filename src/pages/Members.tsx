@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Search, Phone, User as UserIcon, PieChart, Wallet, X } from 'lucide-react';
+import { Search, Phone, User as UserIcon, PieChart, Wallet, X, Users as UsersIcon, DollarSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Profile, Contribution } from '../types';
-import { cn } from '../lib/utils';
+import { cn, formatCurrency } from '../lib/utils';
+import { useSettings } from '../context/SettingsContext';
 
 const Members: React.FC = () => {
+  const { settings } = useSettings();
   const [members, setMembers] = useState<Profile[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
 
-  const SHARE_VALUE = 25; // 1 share = 25 KSh
+  const SHARE_VALUE = parseFloat(settings.share_value || '25');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,7 +67,30 @@ const Members: React.FC = () => {
 
   return (
     <div className="p-4 space-y-6 pb-24">
-      <h2 className="text-2xl font-bold text-gray-900">Family Members</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Family Members</h2>
+        <div className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+          <UsersIcon size={14} className="mr-1.5" />
+          {members.length} Members
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+          <div className="flex items-center text-gray-400 mb-1">
+            <DollarSign size={14} className="mr-1.5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Share Cost</span>
+          </div>
+          <p className="text-xl font-bold text-emerald-600">{formatCurrency(SHARE_VALUE)}</p>
+        </div>
+        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+          <div className="flex items-center text-gray-400 mb-1">
+            <PieChart size={14} className="mr-1.5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Total Fund</span>
+          </div>
+          <p className="text-xl font-bold text-gray-900">{formatCurrency(groupTotal)}</p>
+        </div>
+      </div>
 
       <div className="relative">
         <input
@@ -80,7 +105,7 @@ const Members: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredMembers.map((member) => {
-          const { ownership, shares } = getMemberStats(member.id);
+          const { userTotal, ownership, shares } = getMemberStats(member.id);
           return (
             <motion.div
               key={member.id}
@@ -118,20 +143,27 @@ const Members: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-50">
-                <div className="bg-emerald-50/50 p-3 rounded-2xl">
+              <div className="grid grid-cols-3 gap-2 pt-4 border-t border-gray-50">
+                <div className="bg-emerald-50/50 p-2 rounded-2xl">
                   <div className="flex items-center text-emerald-600 mb-1">
-                    <PieChart size={14} className="mr-1.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Ownership</span>
+                    <PieChart size={12} className="mr-1" />
+                    <span className="text-[8px] font-bold uppercase tracking-widest">Ownership</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{ownership.toFixed(2)}%</p>
+                  <p className="text-sm font-bold text-gray-900">{ownership.toFixed(1)}%</p>
                 </div>
-                <div className="bg-blue-50/50 p-3 rounded-2xl">
+                <div className="bg-blue-50/50 p-2 rounded-2xl">
                   <div className="flex items-center text-blue-600 mb-1">
-                    <Wallet size={14} className="mr-1.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Shares</span>
+                    <Wallet size={12} className="mr-1" />
+                    <span className="text-[8px] font-bold uppercase tracking-widest">Shares</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{shares.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-gray-900">{shares.toFixed(1)}</p>
+                </div>
+                <div className="bg-amber-50/50 p-2 rounded-2xl">
+                  <div className="flex items-center text-amber-600 mb-1">
+                    <DollarSign size={12} className="mr-1" />
+                    <span className="text-[8px] font-bold uppercase tracking-widest">Total</span>
+                  </div>
+                  <p className="text-sm font-bold text-gray-900">{formatCurrency(userTotal)}</p>
                 </div>
               </div>
             </motion.div>
