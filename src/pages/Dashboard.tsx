@@ -4,14 +4,17 @@ import { Wallet, TrendingUp, History, Calendar, ArrowUpRight, AlertCircle, Users
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useSettings } from '../context/SettingsContext';
 import { Contribution } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { format, differenceInWeeks, addDays, startOfWeek } from 'date-fns';
+import { format, differenceInWeeks, addDays, startOfWeek, differenceInCalendarWeeks } from 'date-fns';
 
 const Dashboard: React.FC = () => {
   const { user, profile } = useAuth();
   const { theme } = useTheme();
+  const { settings } = useSettings();
+  const chartContainerRef = React.useRef<HTMLDivElement>(null);
   const [userContributions, setUserContributions] = useState<Contribution[]>([]);
   const [allContributions, setAllContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,9 +29,8 @@ const Dashboard: React.FC = () => {
     groupShares: 0,
   });
 
-  const BASE_DATE = new Date('2026-04-06T00:00:00Z'); // Monday, April 6th, 2026
-
-  const SHARE_VALUE = 25; // 1 share = 25 KSh
+  const BASE_DATE = new Date(settings.launch_date || '2026-04-06T00:00:00Z'); 
+  const SHARE_VALUE = parseFloat(settings.share_value || '25');
 
   const fetchData = async () => {
     if (!user) return;
@@ -94,40 +96,51 @@ const Dashboard: React.FC = () => {
     };
   }, [user, profile]);
 
-  // Weekly chart data starting from BASE_DATE
+  // Auto-scroll the chart to the far right after loading data
+  useEffect(() => {
+    if (!loading && chartContainerRef.current) {
+      chartContainerRef.current.scrollLeft = chartContainerRef.current.scrollWidth;
+    }
+  }, [loading, allContributions]);
+
+  // Weekly chart data starting from the earliest contribution
   const getWeeklyChartData = () => {
-    const weeklyData: Record<string, number> = { 'W1': 0 };
-    const now = new Date();
+    if (allContributions.length === 0) return [];
     
-    // Sum all before BASE_DATE into W1
-    allContributions.forEach(c => {
-      const d = new Date(c.date);
-      if (d < BASE_DATE) {
-        weeklyData['W1'] += c.amount;
-      }
-    });
+    const dates = allContributions.map(c => new Date(c.date).getTime());
+    const minTime = Math.min(...dates, BASE_DATE.getTime());
+    const maxTime = Math.max(...dates, new Date().getTime());
+    
+    const startDate = startOfWeek(new Date(minTime), { weekStartsOn: 1 }); // Start on Monday
+    const endDate = new Date(maxTime);
+    
+    const weeklyData: Record<string, { amount: number; dateRange: string }> = {};
+    const totalWeeks = Math.max(1, differenceInCalendarWeeks(endDate, startDate, { weekStartsOn: 1 }) + 1);
 
-    const totalWeeksAfter = Math.max(0, differenceInWeeks(now, BASE_DATE) + 1);
-
-    // Initialize weeks after BASE_DATE
-    for (let i = 0; i < totalWeeksAfter; i++) {
-      const label = `W${i + 2}`;
-      weeklyData[label] = 0;
+    for (let i = 0; i < totalWeeks; i++) {
+        const weekStart = addDays(startDate, i * 7);
+        const weekEnd = addDays(weekStart, 6);
+        const label = `W${i + 1}`;
+        weeklyData[label] = { 
+            amount: 0, 
+            dateRange: `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d')}` 
+        };
     }
 
-    // Fill with data after BASE_DATE
     allContributions.forEach(c => {
       const d = new Date(c.date);
-      if (d >= BASE_DATE) {
-        const weekIdx = differenceInWeeks(d, BASE_DATE);
-        const label = `W${weekIdx + 2}`;
-        if (weeklyData[label] !== undefined) {
-          weeklyData[label] += c.amount;
-        }
+      const weekIdx = Math.max(0, differenceInCalendarWeeks(d, startDate, { weekStartsOn: 1 }));
+      const label = `W${weekIdx + 1}`;
+      if (weeklyData[label] !== undefined) {
+        weeklyData[label].amount += c.amount;
       }
     });
 
-    return Object.entries(weeklyData).map(([week, amount]) => ({ week, amount }));
+    return Object.entries(weeklyData).map(([week, data]) => ({ 
+        week, 
+        amount: data.amount,
+        dateRange: data.dateRange
+    }));
   };
 
   const chartData = getWeeklyChartData();
@@ -150,7 +163,7 @@ const Dashboard: React.FC = () => {
       >
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hello, {profile?.name?.split(' ')[0]}!</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Real-time Gunda Legacy Dashboard</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Real-time {settings.app_name} Dashboard</p>
         </div>
         <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
           <Calendar size={20} />
@@ -234,7 +247,7 @@ const Dashboard: React.FC = () => {
             </div>
             <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">{allContributions.length}</span>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Family Records</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Group Records</p>
         </motion.div>
 
         <motion.div
@@ -267,40 +280,61 @@ const Dashboard: React.FC = () => {
               From Week 1
             </div>
           </div>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis 
-                  dataKey="week" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} 
-                />
-                <YAxis hide />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(16, 185, 129, 0.05)' }}
-                  contentStyle={{ 
-                    borderRadius: '16px', 
-                    border: 'none', 
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-                    backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff',
-                    color: theme === 'dark' ? '#ffffff' : '#000000'
-                  }}
-                  itemStyle={{ color: theme === 'dark' ? '#ffffff' : '#000000' }}
-                  formatter={(value: number) => [formatCurrency(value), 'Total']}
-                />
-                <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
-                  {chartData.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#059669' : '#10b981'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="h-48 w-full overflow-x-auto no-scrollbar smooth-scroll" ref={chartContainerRef}>
+            <div style={{ minWidth: `${Math.max(100, chartData.length * 60)}px`, height: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#059669" stopOpacity={0.8} />
+                    </linearGradient>
+                    <linearGradient id="activeBarGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#059669" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#047857" stopOpacity={1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#333' : '#f3f4f6'} />
+                  <XAxis 
+                    dataKey="week" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} 
+                  />
+                  <YAxis hide />
+                  <Tooltip 
+                    cursor={{ fill: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(16, 185, 129, 0.05)' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-white dark:bg-[#1a1a1a] p-3 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 transition-colors duration-300">
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+                              {payload[0].payload.dateRange}
+                            </p>
+                            <p className="text-lg font-bold text-gray-900 dark:text-white">
+                              {formatCurrency(payload[0].value as number)}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="amount" radius={[6, 6, 0, 0]} animationDuration={1000}>
+                    {chartData.map((_entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={index === chartData.length - 1 ? "url(#activeBarGradient)" : "url(#barGradient)"} 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </motion.div>
 
-        {/* Recent Activity (Family Wide) */}
+        {/* Recent Activity (Group Wide) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -308,7 +342,7 @@ const Dashboard: React.FC = () => {
           className="space-y-4 h-full"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-gray-900 dark:text-white font-bold">Recent Family Activity</h3>
+            <h3 className="text-gray-900 dark:text-white font-bold">Recent Group Activity</h3>
             <Users size={18} className="text-gray-400 dark:text-gray-500" />
           </div>
           

@@ -89,7 +89,7 @@ const Sidebar: React.FC = () => {
             <img src={settings.app_logo} alt="Logo" className="w-10 h-10 rounded-xl" />
           ) : (
             <div className="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-bold text-xl">
-              G
+              {settings.app_name?.charAt(0) || 'L'}
             </div>
           )}
           <div>

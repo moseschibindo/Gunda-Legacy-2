@@ -71,7 +71,7 @@ const Header: React.FC = () => {
           <img src={settings.app_logo} alt="Logo" className="w-8 h-8 rounded-full border border-white/20" />
         ) : (
           <div className="w-8 h-8 bg-white text-emerald-600 dark:text-emerald-700 rounded-full flex items-center justify-center font-bold">
-            G
+            {settings.app_name?.charAt(0) || 'L'}
           </div>
         )}
         <h1 className="font-bold text-lg truncate max-w-[180px]">{settings.app_name}</h1>

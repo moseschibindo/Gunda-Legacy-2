@@ -68,7 +68,7 @@ const Members: React.FC = () => {
   return (
     <div className="p-4 space-y-6 pb-24 transition-colors duration-300">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Family Members</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Group Members</h2>
         <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold flex items-center">
           <UsersIcon size={14} className="mr-1.5" />
           {members.length} Members

@@ -182,11 +182,11 @@ const Login: React.FC = () => {
             {settings.app_logo ? (
               <img src={settings.app_logo} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
             ) : (
-              'G'
+              settings.app_name?.charAt(0) || 'L'
             )}
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isForgotPassword ? 'Reset Password' : isSignUp ? 'Join Gunda Legacy' : 'Welcome Back'}
+            {isForgotPassword ? 'Reset Password' : isSignUp ? `Join ${settings.app_name}` : 'Welcome Back'}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
             {isForgotPassword ? 'Enter your phone or email to get a reset link' : settings.app_slogan}

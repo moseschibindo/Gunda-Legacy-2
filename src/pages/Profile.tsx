@@ -38,7 +38,7 @@ const Profile: React.FC = () => {
     "Your future self will thank you for the sacrifices you make today.",
     "Consistency is the key to wealth. You're doing great!",
     "A shilling saved is a shilling earned. Keep the momentum!",
-    "Gunda Legacy is built on the strength of its members. Proud of you!",
+    `${settings.app_name} is built on the strength of its members. Proud of you!`,
     "Success is the sum of small efforts, repeated day in and day out.",
     "The best time to save was yesterday. The second best time is now.",
   ];
@@ -229,7 +229,7 @@ const Profile: React.FC = () => {
           <ShieldAlert className="text-amber-600 mt-0.5" size={20} />
           <div>
             <p className="text-amber-900 font-bold text-sm">Action Required</p>
-            <p className="text-amber-700 text-xs mt-0.5">Please update your name and email address to continue using Gunda Legacy.</p>
+            <p className="text-amber-700 text-xs mt-0.5">Please update your name and email address to continue using {settings.app_name}.</p>
           </div>
         </div>
       )}
@@ -482,7 +482,7 @@ const Profile: React.FC = () => {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900 dark:text-white">App Logo</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Upload a logo to represent Gunda Legacy across the application.</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Upload a logo to represent {settings.app_name} across the application.</p>
               <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-2 uppercase tracking-wider">Admin Only</p>
             </div>
           </div>
@@ -567,7 +567,7 @@ const Profile: React.FC = () => {
           className="w-full flex items-center justify-center space-x-3 p-5 bg-red-50 dark:bg-red-900/10 rounded-[24px] border border-red-100 dark:border-red-900/20 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors active:scale-[0.98]"
         >
           <LogOut size={20} />
-          <span>Sign Out of Gunda Legacy</span>
+          <span>Sign Out of {settings.app_name}</span>
         </button>
       </div>
 

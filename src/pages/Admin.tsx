@@ -424,6 +424,15 @@ const Admin: React.FC = () => {
                   className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-900 dark:text-white"
                 />
               </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Launch Date (For Week 1 Root)</label>
+                <input
+                  type="date"
+                  defaultValue={settings.launch_date}
+                  onBlur={(e) => updateSetting('launch_date', e.target.value)}
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-900 dark:text-white"
+                />
+              </div>
             </div>
           </div>
         </div>

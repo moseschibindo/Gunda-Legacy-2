@@ -12,11 +12,12 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<Record<string, string>>({
-    app_name: 'Gunda Legacy',
+    app_name: 'Progress Hub Tetu',
     app_slogan: 'Secure Your Future, Together',
     app_logo: '',
     hero_image: '',
     share_value: '25',
+    launch_date: '2026-04-06',
     weekly_motivation: 'Small steps lead to big changes. Keep saving!',
   });
   const [loading, setLoading] = useState(true);
