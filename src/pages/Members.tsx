@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Search, Phone, User as UserIcon, PieChart, Wallet, X, Users as UsersIcon, DollarSign } from 'lucide-react';
+import { Search, Phone, User as UserIcon, PieChart, Wallet, X, Users as UsersIcon, DollarSign, Briefcase, Camera } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Profile, Contribution } from '../types';
 import { cn, formatCurrency } from '../lib/utils';
 import { useSettings } from '../context/SettingsContext';
+import { useNavigate } from 'react-router-dom';
 
 const Members: React.FC = () => {
   const { settings } = useSettings();
+  const navigate = useNavigate();
   const [members, setMembers] = useState<Profile[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ const Members: React.FC = () => {
 
   const getMemberStats = (userId: string) => {
     const userTotal = contributions
-      .filter(c => c.user_id === userId)
+      .filter(c => c.profile_id === userId || c.user_id === userId)
       .reduce((acc, curr) => acc + curr.amount, 0);
     
     const ownership = groupTotal > 0 ? (userTotal / groupTotal) * 100 : 0;
@@ -75,6 +77,54 @@ const Members: React.FC = () => {
         </div>
       </div>
 
+      {members.length === 0 && (
+        <div className="text-center py-12 px-6 bg-white dark:bg-[#1a1a1a] rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+          <div className="bg-gray-50 dark:bg-gray-900/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400">
+            <UsersIcon size={32} />
+          </div>
+          <h3 className="font-bold text-gray-900 dark:text-white">No Members Found</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-6">
+            There are no members in the database yet. New users appear here after they sign up.
+          </p>
+          <button 
+            onClick={() => (window as any).location.href = '/admin'}
+            className="px-6 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95"
+          >
+            Manage Group
+          </button>
+        </div>
+      )}
+
+      {/* Navigation Buttons */}
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          onClick={() => navigate('/projects')}
+          className="group relative h-24 bg-emerald-600 rounded-[32px] overflow-hidden shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-95"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-emerald-700 opacity-90" />
+          <div className="relative h-full flex flex-col items-center justify-center text-white">
+            <Briefcase size={28} className="mb-1 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Our Projects</span>
+          </div>
+          <div className="absolute top-2 right-4 opacity-10">
+            <Briefcase size={48} />
+          </div>
+        </button>
+        <button
+          onClick={() => navigate('/photos')}
+          className="group relative h-24 bg-blue-600 rounded-[32px] overflow-hidden shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-90" />
+          <div className="relative h-full flex flex-col items-center justify-center text-white">
+            <Camera size={28} className="mb-1 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Group Photos</span>
+          </div>
+          <div className="absolute top-2 right-4 opacity-10">
+            <Camera size={48} />
+          </div>
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
           <div className="flex items-center text-gray-400 dark:text-gray-500 mb-1">
@@ -104,7 +154,7 @@ const Members: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredMembers.map((member) => {
+        {filteredMembers.map((member, idx) => {
           const { userTotal, ownership, shares } = getMemberStats(member.id);
           return (
             <motion.div
@@ -131,7 +181,10 @@ const Members: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2">
-                    <h4 className="font-bold text-gray-900 dark:text-white truncate text-lg">{member.name}</h4>
+                    <h4 className="font-bold text-gray-900 dark:text-white truncate text-lg">
+                      <span className="text-emerald-500 mr-1.5 opacity-50 font-mono">{(idx + 1).toString().padStart(2, '0')}.</span>
+                      {member.name}
+                    </h4>
                     {member.role === 'admin' && (
                       <span className="text-[8px] bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Admin</span>
                     )}

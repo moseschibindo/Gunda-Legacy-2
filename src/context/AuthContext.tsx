@@ -28,18 +28,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!error && data) {
       setProfile(data);
     } else if (currentUser) {
-      // Fallback to metadata if profile record is missing
-      // This ensures signup data (name, email, phone) is available immediately
-      setProfile({
+      // Create missing profile record
+      const newProfile = {
         id: userId,
-        name: currentUser.user_metadata?.name || '',
+        name: currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Unknown User',
         phone: currentUser.user_metadata?.phone || '',
         email: currentUser.user_metadata?.email || currentUser.email || '',
         role: 'member',
         profile_picture: null,
         is_suspended: false,
-        created_at: currentUser.created_at
-      });
+      };
+
+      // Try to insert the profile if it doesn't exist
+      const { data: insertedData, error: insertError } = await supabase
+        .from('profiles')
+        .upsert(newProfile, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (!insertError && insertedData) {
+        setProfile(insertedData);
+      } else {
+        // Fallback to local state if DB update fails (e.g. RLS issues)
+        setProfile({
+          ...newProfile,
+          created_at: currentUser.created_at
+        } as Profile);
+      }
     }
   };
 

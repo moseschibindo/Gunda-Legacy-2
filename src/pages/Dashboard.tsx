@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Wallet, TrendingUp, History, Calendar, ArrowUpRight, AlertCircle, Users, PieChart, X } from 'lucide-react';
+import { Wallet, TrendingUp, History, Calendar, ArrowUpRight, AlertCircle, Users, PieChart, X, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -27,6 +27,9 @@ const Dashboard: React.FC = () => {
     missed: 0,
     userShares: 0,
     groupShares: 0,
+    compliance: 0,
+    balance: 0,
+    expectedWeeks: 0
   });
 
   const BASE_DATE = new Date(settings.launch_date || '2026-04-06T00:00:00Z'); 
@@ -35,49 +38,69 @@ const Dashboard: React.FC = () => {
   const fetchData = async () => {
     if (!user) return;
 
-    // Fetch all contributions for group stats and chart
-    const { data: allData, error: allError } = await supabase
-      .from('contributions')
-      .select('*, profiles(name, profile_picture)')
-      .order('date', { ascending: false });
+    try {
+      // Fetch all contributions for group stats and chart
+      const { data: allData, error: allError } = await supabase
+        .from('contributions')
+        .select(`
+          *,
+          profiles:profile_id (
+            name,
+            profile_picture
+          )
+        `)
+        .order('date', { ascending: false });
 
-    if (!allError && allData) {
-      setAllContributions(allData);
-      
-      const groupTotal = allData.reduce((acc, curr) => acc + curr.amount, 0);
-      const userData = allData.filter(c => c.user_id === user.id);
-      setUserContributions(userData);
-      
-      const userTotal = userData.reduce((acc, curr) => acc + curr.amount, 0);
-      const userCount = userData.length;
-      const ownership = groupTotal > 0 ? (userTotal / groupTotal) * 100 : 0;
-      const userShares = userTotal / SHARE_VALUE;
-      const groupShares = groupTotal / SHARE_VALUE;
-      
-      // Calculate missed Sundays
-      const joinDate = new Date(profile?.created_at || new Date());
-      const now = new Date();
-      let expectedSundays = 0;
-      let tempDate = startOfWeek(joinDate, { weekStartsOn: 0 });
-      
-      while (tempDate <= now) {
-        expectedSundays++;
-        tempDate = new Date(tempDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      if (allError) throw allError;
+
+      if (allData) {
+        setAllContributions(allData);
+        
+        const groupTotal = allData.reduce((acc, curr) => acc + curr.amount, 0);
+        const userData = allData.filter(c => c.user_id === user.id || (c as any).profile_id === user.id);
+        setUserContributions(userData);
+        
+        const userTotal = userData.reduce((acc, curr) => acc + curr.amount, 0);
+        const userCount = userData.length;
+        const ownership = groupTotal > 0 ? (userTotal / groupTotal) * 100 : 0;
+        const userShares = userTotal / SHARE_VALUE;
+        const groupShares = groupTotal / SHARE_VALUE;
+        
+        // Financial Health Logic (Matching Admin Summary)
+        const DEFAULT_PAYMENT = 50;
+        const now = new Date();
+        const diffTime = Math.max(0, now.getTime() - BASE_DATE.getTime());
+        const expectedWeeks = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7)) + 1);
+        
+        const uniqueWeeksPaid = new Set(userData.map(c => {
+          const d = new Date(c.date);
+          return Math.floor((d.getTime() - BASE_DATE.getTime()) / (1000 * 60 * 60 * 24 * 7));
+        })).size;
+
+        const targetSavings = expectedWeeks * DEFAULT_PAYMENT;
+        const compliance = Math.min(100, (userTotal / targetSavings) * 100);
+        const missed = Math.max(0, expectedWeeks - uniqueWeeksPaid);
+        const balance = targetSavings - userTotal;
+        
+        setStats({ 
+          userTotal, 
+          groupTotal, 
+          ownership, 
+          userCount, 
+          missed,
+          userShares,
+          groupShares,
+          compliance,
+          balance,
+          expectedWeeks
+        });
       }
-      
-      const missed = Math.max(0, expectedSundays - userCount);
-      
-      setStats({ 
-        userTotal, 
-        groupTotal, 
-        ownership, 
-        userCount, 
-        missed,
-        userShares,
-        groupShares
-      });
+    } catch (err: any) {
+      console.error('Error fetching dashboard data:', err);
+      // We don't throw here to avoid crashing the UI, just leave data empty
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -162,13 +185,39 @@ const Dashboard: React.FC = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hello, {profile?.name?.split(' ')[0]}!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hello, {profile?.name?.split(' ')[0] || 'User'}!</h2>
           <p className="text-gray-500 dark:text-gray-400 text-sm">Real-time {settings.app_name} Dashboard</p>
         </div>
         <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
           <Calendar size={20} />
         </div>
       </motion.div>
+
+      {allContributions.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-3xl p-6"
+        >
+          <div className="flex items-start space-x-4">
+            <div className="bg-amber-100 dark:bg-amber-900/40 p-3 rounded-2xl text-amber-600 dark:text-amber-400">
+              <AlertCircle size={24} />
+            </div>
+            <div>
+              <h3 className="font-bold text-amber-900 dark:text-amber-200">No data found in your database</h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                It looks like your database is empty. You can quickly get started by seeding sample data in the Admin panel.
+              </p>
+              <button 
+                onClick={() => (window as any).location.href = '/admin'}
+                className="mt-4 px-6 py-2 bg-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-amber-700 transition-all active:scale-95"
+              >
+                Go to Admin Panel
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Main Stats Card */}
       <motion.div
@@ -215,11 +264,11 @@ const Dashboard: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-2">
             <div className="bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg text-blue-600 dark:text-blue-400">
-              <History size={18} />
+              <PieChart size={18} />
             </div>
-            <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">{stats.userCount}</span>
+            <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">{stats.userShares.toFixed(2)}</span>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Your Payments</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Your Shares</p>
         </motion.div>
 
         <motion.div
@@ -233,7 +282,7 @@ const Dashboard: React.FC = () => {
             </div>
             <span className="text-orange-600 dark:text-orange-400 font-bold text-lg">{stats.missed}</span>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Missed Sundays</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Missed Weeks</p>
         </motion.div>
 
         <motion.div
@@ -243,11 +292,11 @@ const Dashboard: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-2">
             <div className="bg-purple-50 dark:bg-purple-900/30 p-2 rounded-lg text-purple-600 dark:text-purple-400">
-              <Users size={18} />
+              <Shield size={18} />
             </div>
-            <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">{allContributions.length}</span>
+            <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">{stats.compliance.toFixed(0)}%</span>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Group Records</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Compliance</p>
         </motion.div>
 
         <motion.div
@@ -257,11 +306,16 @@ const Dashboard: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-2">
             <div className="bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-lg text-emerald-600 dark:text-emerald-400">
-              <TrendingUp size={18} />
+              <Wallet size={18} />
             </div>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">{chartData.length}</span>
+            <span className={cn(
+              "font-bold text-lg",
+              stats.balance > 0 ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400"
+            )}>
+              {stats.balance > 0 ? `-${(stats.balance)}` : 'OK'}
+            </span>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Weeks Active</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Balance Status</p>
         </motion.div>
       </div>
 

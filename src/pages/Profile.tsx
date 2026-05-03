@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Phone, Mail, Camera, LogOut, Shield, CheckCircle, Loader2, Quote, TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, X, ShieldAlert, Plus, Edit2, Save, Moon, Sun } from 'lucide-react';
+import { User, Phone, Mail, Camera, LogOut, Shield, CheckCircle, Loader2, Quote, TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, X, ShieldAlert, Plus, Edit2, Save, Moon, Sun, History } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { compressImage } from '../lib/imageUtils';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -114,7 +115,9 @@ const Profile: React.FC = () => {
     setUploading(true);
     setError(null);
     
-    const file = e.target.files[0];
+    let file = e.target.files[0];
+    file = await compressImage(file) as File;
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${profile?.id}-${Math.random()}.${fileExt}`;
     const filePath = `avatars/${fileName}`;
@@ -145,7 +148,9 @@ const Profile: React.FC = () => {
     setLogoUploading(true);
     setError(null);
     
-    const file = e.target.files[0];
+    let file = e.target.files[0];
+    file = await compressImage(file) as File;
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `app-logo-${Math.random()}.${fileExt}`;
     const filePath = `logos/${fileName}`;
@@ -443,10 +448,14 @@ const Profile: React.FC = () => {
           </div>
           <div className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100/50 dark:border-blue-900/20">
             <div className="flex items-center text-blue-600 dark:text-blue-400 mb-1">
-              <ArrowUpRight size={14} className="mr-1.5" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Status</span>
+              <History size={14} className="mr-1.5" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Shares Owned</span>
             </div>
-            <p className="text-xl font-bold text-gray-900 dark:text-white">On Track</p>
+            {savingsLoading ? (
+              <div className="h-8 w-24 bg-blue-100 dark:bg-blue-900/20 animate-pulse rounded-lg mt-1" />
+            ) : (
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{(totalSavings / parseFloat(settings.share_value || '25')).toFixed(2)}</p>
+            )}
           </div>
         </div>
       </motion.div>

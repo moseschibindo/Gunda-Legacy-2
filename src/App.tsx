@@ -19,6 +19,8 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Members from './pages/Members';
 import Contributions from './pages/Contributions';
+import Projects from './pages/Projects';
+import Photos from './pages/Photos';
 
 const ProfileGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { profile, loading } = useAuth();
@@ -44,7 +46,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2500);
+    }, 3500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -70,7 +72,7 @@ const AppContent: React.FC = () => {
 
               {/* Main Content Area */}
               <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                <div className="w-full max-w-5xl mx-auto bg-white dark:bg-[#111111] h-full shadow-xl flex flex-col relative md:shadow-none md:border-l md:border-r md:border-gray-100 dark:md:border-gray-800 transition-colors duration-300 overflow-hidden">
+                <div className="w-full max-w-7xl mx-auto md:px-6 bg-white dark:bg-[#111111] h-full shadow-xl flex flex-col relative md:shadow-none transition-colors duration-300 overflow-hidden">
                   <main className="flex-1 overflow-y-auto no-scrollbar overscroll-contain">
                     <ProfileGuard>
                       <Routes>
@@ -79,6 +81,8 @@ const AppContent: React.FC = () => {
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/members" element={<Members />} />
                         <Route path="/contributions" element={<Contributions />} />
+                        <Route path="/projects" element={<Projects />} />
+                        <Route path="/photos" element={<Photos />} />
                         <Route path="/admin" element={profile?.role === 'admin' ? <Admin /> : <Navigate to="/" />} />
                         <Route path="*" element={<Navigate to="/" />} />
                       </Routes>

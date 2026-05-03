@@ -24,20 +24,33 @@ const Contributions: React.FC = () => {
 
   useEffect(() => {
     const fetchContributions = async () => {
-      const { data, error } = await supabase
-        .from('contributions')
-        .select('*, profiles(*)')
-        .order('date', { ascending: false });
-      
-      if (!error && data) {
-        setContributions(data);
-        // Expand the most recent week by default
-        if (data.length > 0) {
-          const firstWeek = getWeekKey(new Date(data[0].date));
-          setExpandedWeeks({ [firstWeek]: true });
+      try {
+        const { data, error } = await supabase
+          .from('contributions')
+          .select(`
+            *,
+            profiles:profile_id (
+              name,
+              profile_picture
+            )
+          `)
+          .order('date', { ascending: false });
+        
+        if (!error && data) {
+          setContributions(data);
+          // Expand the most recent week by default
+          if (data.length > 0) {
+            const firstWeek = getWeekKey(new Date(data[0].date));
+            setExpandedWeeks({ [firstWeek]: true });
+          }
+        } else if (error) {
+          console.error('Error fetching contributions:', error);
         }
+      } catch (err) {
+        console.error('Unexpected error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchContributions();
@@ -295,8 +308,20 @@ const Contributions: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="text-center py-12 text-gray-400 dark:text-gray-500 italic">
-            No records found
+          <div className="text-center py-12 px-6 bg-white dark:bg-[#1a1a1a] rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+            <div className="bg-gray-50 dark:bg-gray-900/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400">
+              <FileText size={32} />
+            </div>
+            <h3 className="font-bold text-gray-900 dark:text-white">No Savings Records</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-6">
+              There are no contribution records in the database. You can add them in the admin panel or seed sample data.
+            </p>
+            <button 
+              onClick={() => (window as any).location.href = '/admin'}
+              className="px-6 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95"
+            >
+              Go to Admin Panel
+            </button>
           </div>
         )}
       </div>
