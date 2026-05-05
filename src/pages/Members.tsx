@@ -55,8 +55,8 @@ const Members: React.FC = () => {
   };
 
   const filteredMembers = members.filter(m => 
-    m.name.toLowerCase().includes(search.toLowerCase()) || 
-    m.phone.includes(search)
+    (m.name?.toLowerCase().includes(search.toLowerCase()) || false) || 
+    (m.phone?.includes(search) || false)
   );
 
   if (loading) {

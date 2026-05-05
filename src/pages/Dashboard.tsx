@@ -9,6 +9,7 @@ import { Contribution } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { format, differenceInWeeks, addDays, startOfWeek, differenceInCalendarWeeks } from 'date-fns';
+import { calculateExpectedWeeks, calculateFullyPaidWeeks, calculateMissedWeeks, calculateCompletedWeeks, getWeekIndex } from '../lib/dateUtils';
 
 const Dashboard: React.FC = () => {
   const { user, profile } = useAuth();
@@ -27,12 +28,12 @@ const Dashboard: React.FC = () => {
     missed: 0,
     userShares: 0,
     groupShares: 0,
-    compliance: 0,
+    recordsCount: 0,
     balance: 0,
     expectedWeeks: 0
   });
 
-  const BASE_DATE = new Date(settings.launch_date || '2026-04-06T00:00:00Z'); 
+  const BASE_DATE = startOfWeek(new Date(settings.launch_date || '2026-04-06'), { weekStartsOn: 1 });
   const SHARE_VALUE = parseFloat(settings.share_value || '25');
 
   const fetchData = async () => {
@@ -67,20 +68,16 @@ const Dashboard: React.FC = () => {
         const groupShares = groupTotal / SHARE_VALUE;
         
         // Financial Health Logic (Matching Admin Summary)
-        const DEFAULT_PAYMENT = 50;
-        const now = new Date();
-        const diffTime = Math.max(0, now.getTime() - BASE_DATE.getTime());
-        const expectedWeeks = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7)) + 1);
+        const weeklyRequired = parseFloat(settings.weekly_contribution || '50');
+        const launchDateStr = settings.launch_date || '2026-04-06T00:00:00Z';
+        const expectedWeeks = calculateExpectedWeeks(launchDateStr);
+        const completedWeeks = calculateCompletedWeeks(launchDateStr);
         
-        const uniqueWeeksPaid = new Set(userData.map(c => {
-          const d = new Date(c.date);
-          return Math.floor((d.getTime() - BASE_DATE.getTime()) / (1000 * 60 * 60 * 24 * 7));
-        })).size;
+        const fullyPaidWeeks = calculateFullyPaidWeeks(userData, launchDateStr, weeklyRequired);
+        const missed = calculateMissedWeeks(userData, launchDateStr);
 
-        const targetSavings = expectedWeeks * DEFAULT_PAYMENT;
-        const compliance = Math.min(100, (userTotal / targetSavings) * 100);
-        const missed = Math.max(0, expectedWeeks - uniqueWeeksPaid);
-        const balance = targetSavings - userTotal;
+        const targetSavings = expectedWeeks * weeklyRequired;
+        const balance = Math.max(0, targetSavings - userTotal);
         
         setStats({ 
           userTotal, 
@@ -90,7 +87,7 @@ const Dashboard: React.FC = () => {
           missed,
           userShares,
           groupShares,
-          compliance,
+          recordsCount: userData.length,
           balance,
           expectedWeeks
         });
@@ -134,7 +131,7 @@ const Dashboard: React.FC = () => {
     const minTime = Math.min(...dates, BASE_DATE.getTime());
     const maxTime = Math.max(...dates, new Date().getTime());
     
-    const startDate = startOfWeek(new Date(minTime), { weekStartsOn: 1 }); // Start on Monday
+    const startDate = BASE_DATE;
     const endDate = new Date(maxTime);
     
     const weeklyData: Record<string, { amount: number; dateRange: string }> = {};
@@ -152,10 +149,12 @@ const Dashboard: React.FC = () => {
 
     allContributions.forEach(c => {
       const d = new Date(c.date);
-      const weekIdx = Math.max(0, differenceInCalendarWeeks(d, startDate, { weekStartsOn: 1 }));
-      const label = `W${weekIdx + 1}`;
-      if (weeklyData[label] !== undefined) {
-        weeklyData[label].amount += c.amount;
+      const weekIdx = differenceInCalendarWeeks(d, startDate, { weekStartsOn: 1 });
+      if (weekIdx >= 0) {
+        const label = `W${weekIdx + 1}`;
+        if (weeklyData[label] !== undefined) {
+          weeklyData[label].amount += c.amount;
+        }
       }
     });
 
@@ -292,11 +291,11 @@ const Dashboard: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-2">
             <div className="bg-purple-50 dark:bg-purple-900/30 p-2 rounded-lg text-purple-600 dark:text-purple-400">
-              <Shield size={18} />
+              <History size={18} />
             </div>
-            <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">{stats.compliance.toFixed(0)}%</span>
+            <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">{stats.recordsCount}</span>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Compliance</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Contribution Records</p>
         </motion.div>
 
         <motion.div
@@ -312,7 +311,7 @@ const Dashboard: React.FC = () => {
               "font-bold text-lg",
               stats.balance > 0 ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400"
             )}>
-              {stats.balance > 0 ? `-${(stats.balance)}` : 'OK'}
+              {stats.balance > 0 ? formatCurrency(stats.balance) : 'OK'}
             </span>
           </div>
           <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Balance Status</p>
@@ -388,7 +387,7 @@ const Dashboard: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Recent Activity (Group Wide) */}
+        {/* Contribution Records (Group Wide) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -396,13 +395,13 @@ const Dashboard: React.FC = () => {
           className="space-y-4 h-full"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-gray-900 dark:text-white font-bold">Recent Group Activity</h3>
+            <h3 className="text-gray-900 dark:text-white font-bold">Contribution Records</h3>
             <Users size={18} className="text-gray-400 dark:text-gray-500" />
           </div>
           
           <div className="space-y-3">
             {allContributions.length > 0 ? (
-              allContributions.slice(0, 5).map((c) => (
+              allContributions.map((c) => (
                 <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm transition-colors duration-300">
                   <div className="flex items-center space-x-3 overflow-hidden">
                     <div 

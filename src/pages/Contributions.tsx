@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Search, DollarSign, Calendar, ArrowUpRight, Filter, X, ChevronDown, ChevronUp, Download, FileText, Loader2 } from 'lucide-react';
+import { Search, DollarSign, Calendar, ArrowUpRight, Filter, X, ChevronDown, ChevronUp, Download, FileText, Loader2, Trophy, Star, Zap, TrendingUp, CheckCircle, Target, Award } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Contribution } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { format, addDays, startOfWeek, differenceInCalendarWeeks } from 'date-fns';
 import { useSettings } from '../context/SettingsContext';
+import { calculateExpectedWeeks, calculateFullyPaidWeeks, calculateMissedWeeks } from '../lib/dateUtils';
 import jsPDF from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 
@@ -17,7 +18,7 @@ const Contributions: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'recent' | 'large'>('all');
+  const [filter, setFilter] = useState<'all' | 'recent' | 'summary'>('all');
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({});
 
   const BASE_DATE = startOfWeek(new Date(settings.launch_date || '2026-04-06'), { weekStartsOn: 1 });
@@ -54,7 +55,7 @@ const Contributions: React.FC = () => {
     };
 
     fetchContributions();
-  }, []);
+  }, [settings.launch_date]); // Add settings.launch_date as dependency if it changes
 
   const getWeekKey = (date: Date) => {
     const d = new Date(date);
@@ -67,10 +68,10 @@ const Contributions: React.FC = () => {
   };
 
   const filteredContributions = contributions.filter(c => {
-    const matchesSearch = c.profiles?.name.toLowerCase().includes(search.toLowerCase()) || 
-                         c.description.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = (c.profiles?.name?.toLowerCase().includes(search.toLowerCase()) || false) || 
+                         (c.description?.toLowerCase().includes(search.toLowerCase()) || false);
     
-    if (filter === 'large') return matchesSearch && c.amount >= 1000;
+    if (filter === 'summary') return matchesSearch; // We filter further for the summary view
     if (filter === 'recent') {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
@@ -237,7 +238,7 @@ const Contributions: React.FC = () => {
         </div>
 
         <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl transition-colors duration-300">
-          {(['all', 'recent', 'large'] as const).map((f) => (
+          {(['all', 'recent', 'summary'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -246,14 +247,143 @@ const Contributions: React.FC = () => {
                 filter === f ? "bg-white dark:bg-[#1a1a1a] text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-gray-500 dark:text-gray-400"
               )}
             >
-              {f}
+              {f === 'summary' ? 'My Summary' : f}
             </button>
           ))}
         </div>
       </div>
 
       <div className="space-y-6">
-        {Object.keys(groupedContributions).length > 0 ? (
+        {filter === 'summary' ? (
+          <div className="space-y-6">
+            {profile ? (
+              (() => {
+                const userContribs = contributions.filter(c => c.profile_id === profile.id || c.user_id === user?.id);
+                const totalPaid = userContribs.reduce((sum, c) => sum + c.amount, 0);
+                const weeklyRequired = parseFloat(settings.weekly_contribution || '50');
+                const launchDate = settings.launch_date || '2026-04-06';
+                
+                const expectedWeeks = calculateExpectedWeeks(launchDate);
+                const fullyPaidWeeks = calculateFullyPaidWeeks(userContribs, launchDate, weeklyRequired);
+                const missedWeeks = calculateMissedWeeks(userContribs, launchDate);
+                const targetSavings = expectedWeeks * weeklyRequired;
+                const balance = Math.max(0, targetSavings - totalPaid);
+                const progress = Math.min(100, (totalPaid / targetSavings) * 100);
+
+                return (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-6"
+                  >
+                    {/* Hero Congratulations */}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 p-8 rounded-[2.5rem] text-white shadow-xl shadow-emerald-200 dark:shadow-none">
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Trophy size={160} />
+                      </div>
+                      <div className="relative z-10">
+                        <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full w-fit mb-4">
+                          <Star size={14} className="text-amber-300" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Outstanding Member</span>
+                        </div>
+                        <h3 className="text-3xl font-black italic tracking-tighter mb-2">Congratulations, {profile.name}!</h3>
+                        <p className="text-emerald-50 text-sm font-medium opacity-90 max-w-[240px]">
+                          You are making incredible progress towards your financial freedom. Keep up the consistency!
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-3">
+                          <TrendingUp size={20} />
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Total Savings</p>
+                        <h4 className="text-xl font-black text-gray-900 dark:text-white mt-1">{formatCurrency(totalPaid)}</h4>
+                      </div>
+                      
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3">
+                          <Zap size={20} />
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Weeks Paid</p>
+                        <h4 className="text-xl font-black text-gray-900 dark:text-white mt-1">{fullyPaidWeeks} / {expectedWeeks}</h4>
+                      </div>
+
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3">
+                          <Target size={20} />
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Target Goal</p>
+                        <h4 className="text-xl font-black text-gray-900 dark:text-white mt-1">{formatCurrency(targetSavings)}</h4>
+                      </div>
+
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-3">
+                          <Award size={20} />
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Progress</p>
+                        <h4 className="text-xl font-black text-gray-900 dark:text-white mt-1">{progress.toFixed(0)}%</h4>
+                      </div>
+                    </div>
+
+                    {/* Balance Card */}
+                    <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-bold text-gray-900 dark:text-white">Detailed Summary</h4>
+                        <CheckCircle size={18} className="text-emerald-500" />
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-gray-800/50">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Arrears Balance</span>
+                          <span className={cn("font-bold", balance > 0 ? "text-amber-500" : "text-emerald-500")}>
+                            {formatCurrency(balance)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-gray-800/50">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Total Contribution Weeks</span>
+                          <span className="font-bold text-gray-900 dark:text-white">{expectedWeeks} Weeks</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-gray-800/50">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Weeks Full Paid</span>
+                          <span className="font-bold text-emerald-500">{fullyPaidWeeks} Weeks</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Weeks Missed</span>
+                          <span className={cn("font-bold", missedWeeks > 0 ? "text-red-500" : "text-emerald-500")}>
+                            {missedWeeks} Weeks
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                       <div className="flex justify-between items-center mb-3">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Savings Completion</p>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">{progress.toFixed(1)}%</span>
+                      </div>
+                      <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progress}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-4 text-center italic">"Consistency is the key to financial success. You are on track!"</p>
+                    </div>
+                  </motion.div>
+                );
+              })()
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Loading your summary...</p>
+              </div>
+            )}
+          </div>
+        ) : Object.keys(groupedContributions).length > 0 ? (
           (Object.entries(groupedContributions) as [string, Contribution[]][]).map(([week, items]) => (
             <div key={week} className="space-y-3">
               <button 

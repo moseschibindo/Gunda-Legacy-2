@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, DollarSign, Settings, Plus, Trash2, Shield, ShieldAlert, UserMinus, Loader2, Search, Filter, X, Calendar, Briefcase, Camera, Edit2, Info, Image as ImageIcon, CheckCircle2, Clock, PieChart, Phone, ArrowLeft, Mail, TrendingUp, AlertTriangle, Download, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Users, DollarSign, Settings, Plus, Trash2, Shield, ShieldAlert, UserMinus, Loader2, Search, Filter, X, Calendar, Briefcase, Camera, Edit2, Info, Image as ImageIcon, CheckCircle2, Clock, PieChart, Phone, ArrowLeft, Mail, TrendingUp, AlertTriangle, Download, AlertCircle, ShieldCheck, Database } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { compressImage } from '../lib/imageUtils';
 import { Profile, Contribution, Project, Media, ProjectStatus } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { format } from 'date-fns';
+import { calculateExpectedWeeks, calculateFullyPaidWeeks, calculateMissedWeeks, calculateCompletedWeeks, getWeekIndex } from '../lib/dateUtils';
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from '../components/ConfirmModal';
@@ -406,8 +407,8 @@ const Admin: React.FC = () => {
   };
 
   const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(search.toLowerCase()) || 
-    u.phone.includes(search)
+    (u.name?.toLowerCase().includes(search.toLowerCase()) || false) || 
+    (u.phone?.includes(search) || false)
   );
 
   return (
@@ -800,8 +801,17 @@ const Admin: React.FC = () => {
                   className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-900 dark:text-white"
                 />
               </div>
+               <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Weekly Required Contribution (KSh)</label>
+                <input
+                  type="number"
+                  defaultValue={settings.weekly_contribution || '50'}
+                  onBlur={(e) => updateSetting('weekly_contribution', e.target.value)}
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-gray-900 dark:text-white"
+                />
+              </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Launch Date (For Week 1 Root)</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Launch Date (For Week 1 Monday Root)</label>
                 <input
                   type="date"
                   defaultValue={settings.launch_date}
@@ -810,101 +820,104 @@ const Admin: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
 
-          <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-4 transition-colors duration-300">
-            <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
-              <ShieldAlert size={18} className="mr-2 text-amber-600 dark:text-amber-400" /> Developer Tools
-            </h3>
-            <div className="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/30">
-              <p className="text-sm font-bold text-amber-800 dark:text-amber-200">Seed Database</p>
-              <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 mb-4">
-                If your database is empty, click below to populate it with sample members, contributions, and projects to see how the app works.
-              </p>
-              <button 
-                onClick={async () => {
-                  if (!confirm("This will add sample records to your database. Continue?")) return;
-                  setLoading(true);
-                  try {
-                    // 1. Add some initial settings if missing
-                    const { data: settingsData } = await supabase.from('settings').select('key');
-                    if (!settingsData || settingsData.length < 3) {
-                      await supabase.from('settings').upsert([
+            <div className="space-y-4 pt-6 border-t border-gray-100 dark:border-white/5">
+              <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
+                <Database size={18} className="mr-2 text-emerald-600 dark:text-emerald-400" /> App Setup
+              </h3>
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+                <p className="text-sm font-bold text-emerald-800 dark:text-emerald-200">Seed Sample Data</p>
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1 mb-4">
+                  Populate your database with sample members, contributions, and projects to explore the application features.
+                </p>
+                <button 
+                  onClick={async () => {
+                    if (!confirm("This will add sample records to your database. Continue?")) return;
+                    setLoading(true);
+                    try {
+                      // 1. Add some initial settings if missing
+                      const { data: settingsData } = await supabase.from('settings').select('key');
+                      const keys = settingsData?.map(s => s.key) || [];
+                      const settingsToUpsert = [
                         { key: 'app_name', value: 'Progress Hub Tetu' },
                         { key: 'app_slogan', value: 'Secure Your Future, Together' },
                         { key: 'share_value', value: '25' },
+                        { key: 'weekly_contribution', value: '50' },
                         { key: 'launch_date', value: '2026-04-06' }
-                      ]);
-                    }
+                      ];
+                      
+                      await supabase.from('settings').upsert(settingsToUpsert);
 
-                    // 2. Add sample projects
-                    const { data: existingProjects } = await supabase.from('projects').select('id').limit(1);
-                    if (!existingProjects || existingProjects.length === 0) {
-                      await supabase.from('projects').insert([
-                        {
-                          title: 'Community Borehole',
-                          description: 'Providing clean water to 500+ households in Tetu village.',
-                          image_url: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&q=80',
-                          status: 'done',
-                          date: '2026-01-15'
-                        },
-                        {
-                          title: 'Tetu Education Fund',
-                          description: 'Supporting bright but needy students with secondary school fees.',
-                          image_url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80',
-                          status: 'coming-soon',
-                          date: '2026-06-01'
-                        }
-                      ]);
-                    }
-
-                    // 3. Add sample media
-                    const { data: existingMedia } = await supabase.from('media').select('id').limit(1);
-                    if (!existingMedia || existingMedia.length === 0) {
-                      await supabase.from('media').insert([
-                        { title: 'Launch Meeting', image_url: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80', type: 'photo' },
-                        { title: 'Project Site Visit', image_url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80', type: 'photo' }
-                      ]);
-                    }
-
-                    // 4. Add sample contributions for the current user if profile exists
-                    if (authUser) {
-                      const { data: existingContribs } = await supabase.from('contributions').select('id').limit(1);
-                      if (!existingContribs || existingContribs.length === 0) {
-                        const today = new Date();
-                        const sampleContribs = [];
-                        for (let i = 0; i < 5; i++) {
-                          const date = new Date();
-                          date.setDate(today.getDate() - (i * 7)); // Over the last 5 weeks
-                          sampleContribs.push({
-                            user_id: authUser.id,
-                            profile_id: authUser.id,
-                            amount: 50,
-                            date: date.toISOString().split('T')[0],
-                            description: `Sample Savings Week ${5-i}`
-                          });
-                        }
-                        await supabase.from('contributions').insert(sampleContribs);
+                      // 2. Add sample projects
+                      const { data: existingProjects } = await supabase.from('projects').select('id').limit(1);
+                      if (!existingProjects || existingProjects.length === 0) {
+                        await supabase.from('projects').insert([
+                          {
+                            title: 'Community Borehole',
+                            description: 'Providing clean water to 500+ households in Tetu village.',
+                            image_url: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&q=80',
+                            status: 'done',
+                            date: '2026-01-15'
+                          },
+                          {
+                            title: 'Tetu Education Fund',
+                            description: 'Supporting bright but needy students with secondary school fees.',
+                            image_url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80',
+                            status: 'coming-soon',
+                            date: '2026-06-01'
+                          }
+                        ]);
                       }
-                    }
 
-                    alert("Sample data seeded successfully! Refresh the page to see changes.");
-                    fetchData();
-                  } catch (err: any) {
-                    alert("Error seeding data: " + err.message);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
-                className="w-full py-3 bg-amber-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-amber-200 dark:shadow-none hover:bg-amber-700 transition-colors"
-              >
-                Seed Sample Data
-              </button>
+                      // 3. Add sample media
+                      const { data: existingMedia } = await supabase.from('media').select('id').limit(1);
+                      if (!existingMedia || existingMedia.length === 0) {
+                        await supabase.from('media').insert([
+                          { title: 'Launch Meeting', image_url: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80', type: 'photo' },
+                          { title: 'Project Site Visit', image_url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80', type: 'photo' }
+                        ]);
+                      }
+
+                      // 4. Add sample contributions for the current user if profile exists
+                      if (authUser) {
+                        const { data: existingContribs } = await supabase.from('contributions').select('id').limit(1);
+                        if (!existingContribs || existingContribs.length === 0) {
+                          const today = new Date();
+                          const sampleContribs = [];
+                          for (let i = 0; i < 5; i++) {
+                            const date = new Date();
+                            date.setDate(today.getDate() - (i * 7)); // Over the last 5 weeks
+                            sampleContribs.push({
+                              user_id: authUser.id,
+                              profile_id: authUser.id,
+                              amount: 50,
+                              date: date.toISOString().split('T')[0],
+                              description: `Sample Savings Week ${5-i}`
+                            });
+                          }
+                          await supabase.from('contributions').insert(sampleContribs);
+                        }
+                      }
+
+                      alert("Sample data seeded successfully! Refresh the page to see changes.");
+                      fetchData();
+                    } catch (err: any) {
+                      alert("Error seeding data: " + err.message);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-emerald-700 transition-colors"
+                >
+                  Seed Sample Data
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+
+          </div>
+        )}
 
       {/* Add Project Modal */}
       <AnimatePresence>
@@ -1478,18 +1491,18 @@ const Admin: React.FC = () => {
           const userContributions = contributions.filter(c => (c as any).profile_id === viewingUser.id || c.user_id === viewingUser.id);
           const totalPaid = userContributions.reduce((sum, c) => sum + c.amount, 0);
           const shareValue = parseFloat(settings.share_value || '25');
-          const DEFAULT_PAYMENT = 50; 
-          const launchDate = new Date(settings.launch_date || '2024-01-01');
-          const today = new Date();
-          const diffTime = Math.max(0, today.getTime() - launchDate.getTime());
-          const expectedWeeks = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7)) + 1);
-          const uniqueWeeksPaid = new Set(userContributions.map(c => {
-            const d = new Date(c.date);
-            return Math.floor((d.getTime() - launchDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
-          })).size;
-          const targetSavings = expectedWeeks * DEFAULT_PAYMENT;
-          const balance = targetSavings - totalPaid;
-          const weeksMissed = Math.max(0, expectedWeeks - uniqueWeeksPaid);
+          const weeklyRequired = parseFloat(settings.weekly_contribution || '50');
+          const launchDate = settings.launch_date || '2024-01-01';
+          
+          const expectedWeeks = calculateExpectedWeeks(launchDate);
+          const completedWeeks = calculateCompletedWeeks(launchDate);
+          const fullyPaidWeeks = calculateFullyPaidWeeks(userContributions, launchDate, weeklyRequired);
+          const missedWeeks = calculateMissedWeeks(userContributions, launchDate);
+          const weeksMissed = missedWeeks;
+          
+          const targetSavings = expectedWeeks * weeklyRequired;
+          const balance = Math.max(0, targetSavings - totalPaid);
+          
           const progress = Math.min(100, (totalPaid / targetSavings) * 100);
 
           const handleDownloadPDF = () => {
@@ -1633,10 +1646,10 @@ const Admin: React.FC = () => {
                     <div className="relative z-10">
                       <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500 mb-6">Contribution Cycle</p>
                       <h3 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white italic tracking-tighter">
-                        {uniqueWeeksPaid} 
-                        <span className="text-sm uppercase font-black text-gray-400 not-italic ml-2 opacity-40">/ {expectedWeeks}</span>
+                        {fullyPaidWeeks} 
+                        <span className="text-sm uppercase font-black text-gray-400 not-italic ml-2 opacity-40">/ {expectedWeeks} PAID</span>
                       </h3>
-                      <p className="mt-6 text-[10px] font-black uppercase tracking-widest">
+                      <div className="mt-6 text-[10px] font-black uppercase tracking-widest">
                         {weeksMissed > 0 ? (
                           <span className="text-rose-500 flex items-center space-x-2">
                              <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
@@ -1648,7 +1661,7 @@ const Admin: React.FC = () => {
                              <span>Participation optimal</span>
                           </span>
                         )}
-                      </p>
+                      </div>
                     </div>
                   </div>
 

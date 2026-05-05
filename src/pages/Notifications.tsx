@@ -178,7 +178,7 @@ const Notifications: React.FC = () => {
                       <div className="flex flex-wrap items-center gap-2 mt-6">
                         {reactionIcons.map(({ emoji, icon: Icon }) => {
                           const users = n.reactions?.[emoji] || [];
-                          const hasReacted = users.includes(profile?.id || '');
+                          const hasReacted = Array.isArray(users) && users.includes(profile?.id || '');
                           
                           return (
                             <button
