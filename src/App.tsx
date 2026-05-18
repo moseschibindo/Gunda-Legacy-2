@@ -9,6 +9,7 @@ import { AnimatePresence } from 'motion/react';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
+import SplashScreen from './components/SplashScreen';
 
 // Pages
 import Login from './pages/Login';
@@ -22,30 +23,33 @@ import Projects from './pages/Projects';
 import Photos from './pages/Photos';
 
 const ProfileGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { profile, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) return null;
-
-  const isProfileIncomplete = !profile?.name || !profile?.email;
-  const isAtProfilePage = location.pathname === '/profile';
-
-  if (isProfileIncomplete && !isAtProfilePage) {
-    return <Navigate to="/profile" replace />;
-  }
-
   return <>{children}</>;
 };
 
 const AppContent: React.FC = () => {
   const { user, loading, profile } = useAuth();
   const { theme } = useTheme();
+  const [showSplash, setShowSplash] = useState(false);
+  const [lastUser, setLastUser] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user && user.id !== lastUser) {
+      setShowSplash(true);
+      setLastUser(user.id);
+    } else if (!user) {
+      setLastUser(null);
+    }
+  }, [user, lastUser]);
 
   if (loading) return null;
 
   return (
     <div className={theme}>
       <AnimatePresence mode="wait">
+        {showSplash && user && (
+          <SplashScreen key="splash" onComplete={() => setShowSplash(false)} />
+        )}
+        
         {!user ? (
           <Login key="login" />
         ) : (

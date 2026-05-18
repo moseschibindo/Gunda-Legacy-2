@@ -400,13 +400,13 @@ const Dashboard: React.FC = () => {
                 <div className="flex justify-between items-end mb-2">
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Global Progress</p>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                    {formatCurrency(stats.groupTotal)} / {formatCurrency(Math.max(stats.groupTotal * 1.5, 1000000))}
+                    {formatCurrency(stats.groupTotal)} / {formatCurrency(100000)}
                   </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (stats.groupTotal / Math.max(stats.groupTotal * 1.5, 1000000)) * 100)}%` }}
+                    animate={{ width: `${Math.min(100, (stats.groupTotal / 100000) * 100)}%` }}
                     className="h-full bg-emerald-500 rounded-full"
                   />
                 </div>
@@ -418,7 +418,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-tight">Active Milestone</p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Road to First 1M KSh Saved!</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Road to First 100K KSh Saved!</p>
                 </div>
               </div>
             </div>
