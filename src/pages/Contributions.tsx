@@ -297,7 +297,7 @@ const Contributions: React.FC = () => {
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 gpu">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 gpu">
                       <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm gpu">
                         <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-3">
                           <TrendingUp size={20} />
