@@ -277,12 +277,14 @@ const Contributions: React.FC = () => {
                     className="space-y-6"
                   >
                     {/* Hero Congratulations */}
-                    <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 p-8 rounded-[2.5rem] text-white shadow-xl shadow-emerald-200 dark:shadow-none">
-                      <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Trophy size={160} />
+                    <div 
+                      className="relative overflow-hidden bg-emerald-600 dark:bg-emerald-700 p-8 rounded-[2.5rem] text-white shadow-md gpu"
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-5">
+                        <Trophy size={140} />
                       </div>
                       <div className="relative z-10">
-                        <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full w-fit mb-4">
+                        <div className="flex items-center space-x-2 bg-white/10 px-3 py-1 rounded-full w-fit mb-4">
                           <Star size={14} className="text-amber-300" />
                           <span className="text-[10px] font-black uppercase tracking-widest">Outstanding Member</span>
                         </div>
@@ -291,11 +293,12 @@ const Contributions: React.FC = () => {
                           You are making incredible progress towards your financial freedom. Keep up the consistency!
                         </p>
                       </div>
+                      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 gpu">
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm gpu">
                         <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-3">
                           <TrendingUp size={20} />
                         </div>
@@ -303,7 +306,7 @@ const Contributions: React.FC = () => {
                         <h4 className="text-xl font-black text-gray-900 dark:text-white mt-1">{formatCurrency(totalPaid)}</h4>
                       </div>
                       
-                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm gpu">
                         <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3">
                           <Zap size={20} />
                         </div>
@@ -311,7 +314,7 @@ const Contributions: React.FC = () => {
                         <h4 className="text-xl font-black text-gray-900 dark:text-white mt-1">{fullyPaidWeeks} / {expectedWeeks}</h4>
                       </div>
 
-                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm gpu">
                         <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3">
                           <Target size={20} />
                         </div>
@@ -319,7 +322,7 @@ const Contributions: React.FC = () => {
                         <h4 className="text-xl font-black text-gray-900 dark:text-white mt-1">{formatCurrency(targetSavings)}</h4>
                       </div>
 
-                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                      <div className="bg-white dark:bg-[#1a1a1a] p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm gpu">
                         <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-3">
                           <Award size={20} />
                         </div>
@@ -329,7 +332,7 @@ const Contributions: React.FC = () => {
                     </div>
 
                     {/* Balance Card */}
-                    <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm gpu">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-bold text-gray-900 dark:text-white">Detailed Summary</h4>
                         <CheckCircle size={18} className="text-emerald-500" />
@@ -359,12 +362,12 @@ const Contributions: React.FC = () => {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm gpu">
                        <div className="flex justify-between items-center mb-3">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Savings Completion</p>
                         <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">{progress.toFixed(1)}%</span>
                       </div>
-                      <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden gpu">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${progress}%` }}

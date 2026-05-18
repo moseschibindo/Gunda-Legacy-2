@@ -96,10 +96,10 @@ const Members: React.FC = () => {
       )}
 
       {/* Navigation Buttons */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3">
         <button
           onClick={() => navigate('/projects')}
-          className="group relative h-24 bg-emerald-600 rounded-[32px] overflow-hidden shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-95"
+          className="group relative h-24 bg-emerald-600 rounded-[32px] overflow-hidden shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-95 sm:col-span-1 md:col-span-2 lg:col-span-1"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-emerald-700 opacity-90" />
           <div className="relative h-full flex flex-col items-center justify-center text-white">
@@ -112,7 +112,7 @@ const Members: React.FC = () => {
         </button>
         <button
           onClick={() => navigate('/photos')}
-          className="group relative h-24 bg-blue-600 rounded-[32px] overflow-hidden shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95"
+          className="group relative h-24 bg-blue-600 rounded-[32px] overflow-hidden shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 sm:col-span-1 md:col-span-2 lg:col-span-1"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-90" />
           <div className="relative h-full flex flex-col items-center justify-center text-white">
@@ -123,17 +123,15 @@ const Members: React.FC = () => {
             <Camera size={48} />
           </div>
         </button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
+        
+        <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300 sm:col-span-1 md:col-span-2 lg:col-span-1">
           <div className="flex items-center text-gray-400 dark:text-gray-500 mb-1">
             <DollarSign size={14} className="mr-1.5" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Share Cost</span>
           </div>
           <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(SHARE_VALUE)}</p>
         </div>
-        <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
+        <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300 sm:col-span-1 md:col-span-2 lg:col-span-1">
           <div className="flex items-center text-gray-400 dark:text-gray-500 mb-1">
             <PieChart size={14} className="mr-1.5" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Total Fund</span>
@@ -233,7 +231,7 @@ const Members: React.FC = () => {
       {/* Image Modal */}
       {showImageModal && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setShowImageModal(null)}
         >
           <motion.div

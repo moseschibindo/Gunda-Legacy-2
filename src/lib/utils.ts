@@ -10,7 +10,8 @@ export function formatCurrency(amount: number) {
     style: 'currency',
     currency: 'KES',
     minimumFractionDigits: 0,
-  }).format(amount);
+    maximumFractionDigits: 0,
+  }).format(amount).replace('KES', 'KSh');
 }
 
 export function getSundayOfDate(date: Date) {

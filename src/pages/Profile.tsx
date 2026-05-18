@@ -166,11 +166,14 @@ const Profile: React.FC = () => {
         .from('profiles')
         .getPublicUrl(filePath);
 
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No active session');
+
       const response = await fetch('/api/admin/update-settings', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ key: 'app_logo', value: publicUrl })
       });
@@ -190,11 +193,14 @@ const Profile: React.FC = () => {
     setMotivationSaving(true);
     
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No active session');
+
       const response = await fetch('/api/admin/update-settings', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ key: 'weekly_motivation', value: motivationInput })
       });
@@ -217,7 +223,7 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-24 gpu">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Profile</h2>
         <button
@@ -256,7 +262,7 @@ const Profile: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm p-8 flex flex-col items-center transition-colors duration-300"
+        className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-md p-8 flex flex-col items-center transition-colors duration-300 gpu"
       >
         <div className="relative">
           <div 
@@ -425,7 +431,7 @@ const Profile: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm p-6 transition-colors duration-300"
+        className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-md p-6 transition-colors duration-300 gpu"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Savings Summary</h3>
@@ -466,7 +472,7 @@ const Profile: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-sm p-6 transition-colors duration-300"
+          className="bg-white dark:bg-[#1a1a1a] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-md p-6 transition-colors duration-300 gpu"
         >
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">App Branding</h3>
@@ -552,7 +558,7 @@ const Profile: React.FC = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden"
+        className="bg-emerald-600 dark:bg-emerald-700 rounded-3xl p-6 text-white shadow-md relative overflow-hidden gpu"
       >
         <div className="relative z-10">
           <div className="flex items-center space-x-2 mb-3">
@@ -570,10 +576,10 @@ const Profile: React.FC = () => {
         </div>
       </motion.div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 gpu">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center space-x-3 p-5 bg-red-50 dark:bg-red-900/10 rounded-[24px] border border-red-100 dark:border-red-900/20 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors active:scale-[0.98]"
+          className="w-full flex items-center justify-center space-x-3 p-5 bg-red-50 dark:bg-red-900/10 rounded-[24px] border border-red-100 dark:border-red-900/20 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition-all active:scale-[0.98] gpu"
         >
           <LogOut size={20} />
           <span>Sign Out of {settings.app_name}</span>
@@ -583,7 +589,7 @@ const Profile: React.FC = () => {
       {/* Image Modal */}
       {showImageModal && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setShowImageModal(null)}
         >
           <motion.div

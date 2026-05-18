@@ -64,22 +64,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Check active sessions
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('Session retrieval error:', error.message);
-        if (error.message.includes('Refresh Token Not Found') || error.message.includes('Invalid Refresh Token')) {
-          // Clear stale session
-          supabase.auth.signOut();
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('Session retrieval error:', error.message);
+          const errMsg = error.message.toLowerCase();
+          if (
+            errMsg.includes('refresh token') || 
+            errMsg.includes('invalid') || 
+            errMsg.includes('not found') ||
+            errMsg.includes('expired')
+          ) {
+            // Forceful cleanup for persistent auth errors
+            console.warn('Handling stale session: clearing storage and resetting.');
+            
+            // Clear all local storage related to supabase
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && (key.includes('supabase') || key.includes('-auth-token'))) {
+                keysToRemove.push(key);
+              }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            
+            // Sign out locally
+            supabase.auth.signOut({ scope: 'local' }).finally(() => {
+              // Only redirect if we were previously trying to stay logged in
+              // or if we're on a protected page. For now, a simple reload or redirect to / works.
+              window.location.href = '/'; 
+            });
+            return;
+          }
         }
-      }
-      
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      if (currentUser) {
-        fetchProfile(currentUser.id, currentUser);
-      }
-      setLoading(false);
-    });
+        
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          fetchProfile(currentUser.id, currentUser);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Unexpected auth error during init:', err);
+        setLoading(false);
+      });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {

@@ -54,14 +54,14 @@ const ProjectCarousel: React.FC<ProjectCarouselProps> = ({ images }) => {
           
           <button 
             onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md text-white rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/30 hover:bg-white/50 text-white rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity"
           >
             <ChevronLeft size={20} />
           </button>
           
           <button 
             onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md text-white rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/30 hover:bg-white/50 text-white rounded-full opacity-0 group-hover/carousel:opacity-100 transition-opacity"
           >
             <ChevronRight size={20} />
           </button>
@@ -99,10 +99,10 @@ const ProjectCard: React.FC<{ project: Project; idx: number }> = ({ project, idx
           <ProjectCarousel images={images} />
           <div className="absolute top-6 left-6 flex flex-col space-y-2">
             <span className={cn(
-              "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center backdrop-blur-md shadow-lg",
+              "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center shadow-lg",
               project.status === 'done' 
-                ? "bg-emerald-500/90 text-white" 
-                : "bg-amber-500/90 text-white"
+                ? "bg-emerald-500 text-white" 
+                : "bg-amber-500 text-white"
             )}>
               {project.status === 'done' ? <CheckCircle2 size={12} className="mr-1.5" /> : <Clock size={12} className="mr-1.5" />}
               {project.status.replace('-', ' ')}
@@ -392,7 +392,7 @@ const Projects: React.FC = () => {
 
       <AnimatePresence>
         {showAddModal && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/70">
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}

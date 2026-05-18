@@ -8,13 +8,33 @@
 @variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  html, body {
+    @apply overflow-x-hidden w-full;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none; /* Prevents pull-to-refresh glitches on some containers */
+  }
+
   body {
     @apply bg-gray-100 text-gray-900 antialiased transition-colors duration-300;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
   }
 
   .dark body {
     @apply bg-[#0a0a0a] text-gray-100;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Force hardware acceleration for smoother rendering and to prevent common mobile GPU artifacts */
+  .gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform;
   }
 
   /* Hide scrollbar for Chrome, Safari and Opera */

@@ -615,7 +615,7 @@ const Admin: React.FC = () => {
                   <img src={p.image_url} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                   <div className="absolute top-4 left-4">
                     <span className={cn(
-                      "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center backdrop-blur-md shadow-sm",
+                      "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center shadow-sm",
                       p.status === 'done' ? "bg-emerald-500 text-white" : p.status === 'coming-soon' ? "bg-amber-500 text-white" : "bg-blue-500 text-white"
                     )}>
                       {p.status === 'done' ? <CheckCircle2 size={10} className="mr-1" /> : <Clock size={10} className="mr-1" />}
@@ -922,7 +922,7 @@ const Admin: React.FC = () => {
       {/* Add Project Modal */}
       <AnimatePresence>
         {showAddProject && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/70">
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1096,7 +1096,7 @@ const Admin: React.FC = () => {
       {/* Edit Project Info Modal */}
       <AnimatePresence>
         {showEditProjectModal && editingProject && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/70">
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1212,7 +1212,7 @@ const Admin: React.FC = () => {
       {/* Project Gallery Management Modal */}
       <AnimatePresence>
         {isProjectGalleryOpen && editingProject && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/80">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1290,7 +1290,7 @@ const Admin: React.FC = () => {
       {/* Add Media Modal */}
       <AnimatePresence>
         {showAddMedia && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/70">
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1386,7 +1386,7 @@ const Admin: React.FC = () => {
       {/* Edit Media Modal */}
       <AnimatePresence>
         {editingMedia && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/70">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1428,7 +1428,7 @@ const Admin: React.FC = () => {
 
       {/* Add Contribution Modal */}
       {showAddContribution && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -1567,7 +1567,7 @@ const Admin: React.FC = () => {
               className="absolute inset-0 z-10 bg-gray-50 dark:bg-[#050505] overflow-y-auto no-scrollbar pb-32"
             >
               {/* Top Navigation Bar */}
-              <div className="sticky top-0 z-30 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 px-4 md:px-8 py-4 flex items-center justify-between">
+              <div className="sticky top-0 z-30 bg-white dark:bg-black border-b border-gray-100 dark:border-white/5 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm">
                 <button 
                   onClick={() => setViewingUser(null)}
                   className="flex items-center space-x-2 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all group"
@@ -1783,7 +1783,7 @@ const Admin: React.FC = () => {
 
               {/* Summary Bottom Bar (Mobile Consistency) */}
               <div className="md:hidden fixed bottom-16 left-0 right-0 p-4 z-40 bg-gradient-to-t from-gray-50 dark:from-[#050505] to-transparent">
-                 <div className="bg-white/80 dark:bg-black/80 backdrop-blur-xl p-4 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-2xl flex items-center justify-between">
+                 <div className="bg-white dark:bg-black p-4 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-xl flex items-center justify-between">
                     <button 
                       onClick={() => setViewingUser(null)}
                       className="p-3 bg-gray-100 dark:bg-zinc-800 rounded-2xl text-gray-500"
@@ -1810,7 +1810,7 @@ const Admin: React.FC = () => {
       {/* Image Modal */}
       {showImageModal && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setShowImageModal(null)}
         >
           <motion.div
@@ -1841,7 +1841,7 @@ const Admin: React.FC = () => {
 
       {/* Alert Modal */}
       {alertModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

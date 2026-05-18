@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Wallet, TrendingUp, History, Calendar, ArrowUpRight, AlertCircle, Users, PieChart, X, Shield } from 'lucide-react';
+import { Wallet, TrendingUp, History, Calendar, ArrowUpRight, AlertCircle, Users, PieChart, X, Shield, Award, Target } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -222,7 +222,7 @@ const Dashboard: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-emerald-600 dark:bg-emerald-700 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200 dark:shadow-none relative overflow-hidden"
+        className="bg-emerald-600 dark:bg-emerald-700 rounded-3xl p-6 text-white shadow-md relative overflow-hidden gpu"
       >
         <div className="relative z-10 space-y-6">
           <div className="flex justify-between items-start">
@@ -234,7 +234,7 @@ const Dashboard: React.FC = () => {
                 {stats.userShares.toFixed(2)} Shares
               </div>
             </div>
-            <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+            <div className="bg-white/10 p-3 rounded-2xl">
               <Wallet size={24} />
             </div>
           </div>
@@ -251,11 +251,11 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-xl" />
       </motion.div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -333,20 +333,10 @@ const Dashboard: React.FC = () => {
               From Week 1
             </div>
           </div>
-          <div className="h-48 w-full overflow-x-auto no-scrollbar smooth-scroll" ref={chartContainerRef}>
-            <div style={{ minWidth: `${Math.max(100, chartData.length * 60)}px`, height: '100%' }}>
+          <div className="h-48 w-full overflow-x-auto no-scrollbar smooth-scroll gpu" ref={chartContainerRef}>
+            <div style={{ minWidth: `${Math.max(100, chartData.length * 60)}px`, height: '100%', position: 'relative' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#059669" stopOpacity={0.8} />
-                    </linearGradient>
-                    <linearGradient id="activeBarGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#059669" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#047857" stopOpacity={1} />
-                    </linearGradient>
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#333' : '#f3f4f6'} />
                   <XAxis 
                     dataKey="week" 
@@ -356,7 +346,7 @@ const Dashboard: React.FC = () => {
                   />
                   <YAxis hide />
                   <Tooltip 
-                    cursor={{ fill: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(16, 185, 129, 0.05)' }}
+                    cursor={{ fill: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(16, 185, 129, 0.05)' }}
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         return (
@@ -373,11 +363,15 @@ const Dashboard: React.FC = () => {
                       return null;
                     }}
                   />
-                  <Bar dataKey="amount" radius={[6, 6, 0, 0]} animationDuration={1000}>
+                  <Bar 
+                    dataKey="amount" 
+                    radius={[6, 6, 0, 0]} 
+                    isAnimationActive={false}
+                  >
                     {chartData.map((_entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={index === chartData.length - 1 ? "url(#activeBarGradient)" : "url(#barGradient)"} 
+                        fill={index === chartData.length - 1 ? "#059669" : "#10b981"} 
                       />
                     ))}
                   </Bar>
@@ -387,54 +381,121 @@ const Dashboard: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Contribution Records (Group Wide) */}
+        {/* Group Achievement Hub */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="space-y-4 h-full"
+          className="space-y-6 h-full"
         >
-          <div className="flex items-center justify-between">
-            <h3 className="text-gray-900 dark:text-white font-bold">Contribution Records</h3>
-            <Users size={18} className="text-gray-400 dark:text-gray-500" />
-          </div>
-          
-          <div className="space-y-3">
-            {allContributions.length > 0 ? (
-              allContributions.map((c) => (
-                <div key={c.id} className="bg-white dark:bg-[#1a1a1a] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm transition-colors duration-300">
-                  <div className="flex items-center space-x-3 overflow-hidden">
-                    <div 
-                      onClick={() => (c.profiles as any)?.profile_picture && setShowImageModal((c.profiles as any).profile_picture)}
-                      className={cn(
-                        "w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-gray-100 dark:border-gray-800",
-                        (c.profiles as any)?.profile_picture ? "cursor-pointer" : "bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500"
-                      )}
-                    >
-                      {(c.profiles as any)?.profile_picture ? (
-                        <img src={(c.profiles as any).profile_picture} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <ArrowUpRight size={18} />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-gray-900 dark:text-white truncate">
-                        {c.user_id === user?.id ? 'You' : (c.profiles as any)?.name}
-                      </p>
-                      <p className="text-gray-500 dark:text-gray-400 text-[10px] font-medium uppercase tracking-wider">
-                        {format(new Date(c.date), 'MMM d, yyyy')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="font-bold text-gray-900 dark:text-white">{formatCurrency(c.amount)}</p>
-                    <span className="text-[8px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-bold uppercase">Verified</span>
-                  </div>
+          {/* Milestone Card */}
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300 gpu">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-gray-900 dark:text-white font-bold">Group Savings Goal</h3>
+              <Target size={18} className="text-emerald-500" />
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-end mb-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Global Progress</p>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                    {formatCurrency(stats.groupTotal)} / {formatCurrency(Math.max(stats.groupTotal * 1.5, 1000000))}
+                  </span>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-400 dark:text-gray-500 italic">No activity recorded</div>
-            )}
+                <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (stats.groupTotal / Math.max(stats.groupTotal * 1.5, 1000000)) * 100)}%` }}
+                    className="h-full bg-emerald-500 rounded-full"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+                <div className="bg-emerald-500 p-2 rounded-xl text-white">
+                  <Award size={16} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-tight">Active Milestone</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Road to First 1M KSh Saved!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Reliability Guard (Leaderboard) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-gray-900 dark:text-white font-bold">Reliability Guard</h3>
+              <div className="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <p className="text-[8px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest leading-none">Top Savers</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {(() => {
+                const userTotals = allContributions.reduce((acc, curr) => {
+                  const pId = (curr as any).profile_id || curr.user_id;
+                  acc[pId] = (acc[pId] || 0) + curr.amount;
+                  return acc;
+                }, {} as Record<string, number>);
+
+                const leaderboard = Object.entries(userTotals)
+                  .map(([id, amount]) => {
+                    const match = allContributions.find(c => ((c as any).profile_id || c.user_id) === id);
+                    return {
+                      id,
+                      amount: amount as number,
+                      name: (match?.profiles as any)?.name || 'Member',
+                      avatar: (match?.profiles as any)?.profile_picture as string | undefined
+                    };
+                  })
+                  .sort((a, b) => (b.amount as number) - (a.amount as number))
+                  .slice(0, 5);
+
+                return leaderboard.length > 0 ? (
+                  leaderboard.map((m, idx) => (
+                    <div key={m.id} className="bg-white dark:bg-[#1a1a1a] p-3 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm transition-colors duration-300 group hover:border-emerald-200 dark:hover:border-emerald-900/50">
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <div className={cn(
+                            "w-10 h-10 rounded-full overflow-hidden border-2",
+                            idx === 0 ? "border-amber-400" : idx === 1 ? "border-gray-300" : idx === 2 ? "border-orange-400" : "border-gray-100 dark:border-gray-800"
+                          )}>
+                            {m.avatar ? (
+                              <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+                                <Users size={16} />
+                              </div>
+                            )}
+                          </div>
+                          <div className={cn(
+                            "absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-white dark:border-[#1a1a1a]",
+                            idx === 0 ? "bg-amber-400" : idx === 1 ? "bg-gray-300" : idx === 2 ? "bg-orange-400" : "bg-emerald-500"
+                          )}>
+                            {idx + 1}
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-900 dark:text-white truncate text-sm">{m.name}</p>
+                          <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                            {(((m.amount as number) / (stats.groupTotal || 1)) * 100).toFixed(1)}% Share
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-gray-900 dark:text-white text-sm">{formatCurrency(m.amount as number)}</p>
+                        <p className="text-[8px] text-gray-400 uppercase font-bold tracking-tighter">Contribution</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-gray-400 dark:text-gray-500 italic text-sm">Waiting for first records...</div>
+                );
+              })()}
+            </div>
           </div>
         </motion.div>
       </div>
@@ -442,7 +503,7 @@ const Dashboard: React.FC = () => {
       {/* Image Modal */}
       {showImageModal && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setShowImageModal(null)}
         >
           <motion.div

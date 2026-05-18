@@ -6,7 +6,6 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AnimatePresence } from 'motion/react';
 
 // Components
-import SplashScreen from './components/SplashScreen';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
@@ -41,23 +40,13 @@ const ProfileGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const AppContent: React.FC = () => {
   const { user, loading, profile } = useAuth();
   const { theme } = useTheme();
-  const [showSplash, setShowSplash] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 3500);
-    return () => clearTimeout(timer);
-  }, []);
 
   if (loading) return null;
 
   return (
     <div className={theme}>
       <AnimatePresence mode="wait">
-        {showSplash ? (
-          <SplashScreen key="splash" />
-        ) : !user ? (
+        {!user ? (
           <Login key="login" />
         ) : (
           <div className="h-screen h-[100dvh] bg-gray-50 dark:bg-[#0a0a0a] flex flex-col md:flex-row relative transition-colors duration-300 overflow-hidden">

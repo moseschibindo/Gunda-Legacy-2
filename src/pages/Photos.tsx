@@ -181,7 +181,7 @@ const Photos: React.FC = () => {
                     {new Date(media.created_at).toLocaleDateString()}
                   </span>
                   <div className="flex items-center space-x-2">
-                    <div className="bg-white/20 p-2 rounded-full backdrop-blur-md text-white">
+                    <div className="bg-white/20 p-2 rounded-full text-white">
                       <Maximize2 size={14} />
                     </div>
                   </div>
@@ -206,7 +206,7 @@ const Photos: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/98 flex items-center justify-center p-4 backdrop-blur-xl"
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
             onClick={() => setSelectedIndex(null)}
           >
             {/* Close Button */}
@@ -220,7 +220,7 @@ const Photos: React.FC = () => {
             {/* Navigation - Left */}
             <button 
               onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/10 rounded-full text-white transition-all z-[110] backdrop-blur-md border border-white/10"
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all z-[110] border border-white/10"
             >
               <ChevronLeft size={32} />
             </button>
@@ -228,7 +228,7 @@ const Photos: React.FC = () => {
             {/* Navigation - Right */}
             <button 
               onClick={(e) => { e.stopPropagation(); handleNext(); }}
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/10 rounded-full text-white transition-all z-[110] backdrop-blur-md border border-white/10"
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all z-[110] border border-white/10"
             >
               <ChevronRight size={32} />
             </button>
@@ -254,8 +254,8 @@ const Photos: React.FC = () => {
                 <button 
                   onClick={() => setShowInfo(!showInfo)}
                   className={cn(
-                    "p-4 rounded-2xl backdrop-blur-md transition-all flex items-center space-x-2 border",
-                    showInfo ? "bg-emerald-600 border-emerald-500 text-white" : "bg-white/5 border-white/10 text-white/70 hover:text-white"
+                    "p-4 rounded-2xl transition-all flex items-center space-x-2 border",
+                    showInfo ? "bg-emerald-600 border-emerald-500 text-white" : "bg-white/10 border-white/10 text-white/70 hover:text-white"
                   )}
                 >
                   <Info size={20} />
@@ -293,7 +293,7 @@ const Photos: React.FC = () => {
       {/* Add Media Modal */}
       <AnimatePresence>
         {showAddModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70">
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
