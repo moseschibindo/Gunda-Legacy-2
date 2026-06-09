@@ -45,17 +45,23 @@ const Login: React.FC = () => {
         if (signUpError) throw signUpError;
         
         if (signUpData.user) {
-          const { error: profileError } = await supabase.from('profiles').insert({
-            id: signUpData.user.id,
-            name,
-            phone,
-            email,
-            role: 'member',
-            is_suspended: false
-          });
-          
-          if (profileError && profileError.code !== '23505') {
-            console.error('Error creating profile:', profileError);
+          try {
+            const createProfileRes = await fetch('/api/auth/create-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: signUpData.user.id,
+                name,
+                phone,
+                email
+              })
+            });
+            if (!createProfileRes.ok) {
+              const resData = await createProfileRes.json();
+              console.error('Error creating profile via backend:', resData.error);
+            }
+          } catch (profileError) {
+            console.error('Error calling create-profile endpoint:', profileError);
           }
         }
 

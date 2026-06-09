@@ -451,20 +451,23 @@ const Admin: React.FC = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredUsers.map((u) => (
               <motion.div
                 key={u.id}
                 layout
                 onClick={() => setViewingUser(u)}
-                className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300 cursor-pointer active:scale-[0.98]"
+                className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:border-emerald-500/20 hover:shadow-md dark:shadow-none hover:translate-y-[-2px] transition-all duration-300 cursor-pointer active:scale-[0.98]"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-between w-full min-w-0 gap-2">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
                     <div 
-                      onClick={() => u.profile_picture && setShowImageModal(u.profile_picture)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (u.profile_picture) setShowImageModal(u.profile_picture);
+                      }}
                       className={cn(
-                        "w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 overflow-hidden",
+                        "w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 overflow-hidden flex-shrink-0",
                         u.profile_picture && "cursor-pointer"
                       )}
                     >
@@ -476,9 +479,9 @@ const Admin: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 dark:text-white">{u.name}</h4>
-                      <p className="text-gray-500 dark:text-gray-400 text-xs">{u.phone}</p>
+                    <div className="min-w-0 flex-1 pr-1">
+                      <h4 className="font-bold text-gray-900 dark:text-white truncate" title={u.name}>{u.name}</h4>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs truncate">{u.phone}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -1561,10 +1564,10 @@ const Admin: React.FC = () => {
 
           return (
             <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="absolute inset-0 z-10 bg-gray-50 dark:bg-[#050505] overflow-y-auto no-scrollbar pb-32"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 15 }}
+              className="fixed inset-0 z-[150] bg-gray-50 dark:bg-[#050505] overflow-y-auto no-scrollbar pb-32"
             >
               {/* Top Navigation Bar */}
               <div className="sticky top-0 z-30 bg-white dark:bg-black border-b border-gray-100 dark:border-white/5 px-4 md:px-8 py-4 flex items-center justify-between shadow-sm">
@@ -1589,28 +1592,28 @@ const Admin: React.FC = () => {
 
               <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-8 pb-40">
                 {/* Profile Header */}
-                <div className="bg-white dark:bg-[#0a0a0a] rounded-[40px] p-6 md:p-8 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col md:flex-row items-center gap-8">
+                <div className="bg-white dark:bg-[#0a0a0a] rounded-3xl md:rounded-[40px] p-6 md:p-8 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col md:flex-row items-center gap-6 md:gap-8">
                   <div className="relative">
-                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-[40px] bg-emerald-50 dark:bg-emerald-900/10 p-1 ring-4 ring-emerald-500/10">
+                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-3xl md:rounded-[40px] bg-emerald-50 dark:bg-emerald-900/10 p-1 ring-4 ring-emerald-500/10 flex-shrink-0">
                       {viewingUser.profile_picture ? (
-                        <img src={viewingUser.profile_picture} alt="" className="w-full h-full object-cover rounded-[36px]" />
+                        <img src={viewingUser.profile_picture} alt="" className="w-full h-full object-cover rounded-2xl md:rounded-[36px]" />
                       ) : (
-                        <div className="w-full h-full rounded-[36px] bg-emerald-500 flex items-center justify-center text-white text-4xl font-black italic">
+                        <div className="w-full h-full rounded-2xl md:rounded-[36px] bg-emerald-500 flex items-center justify-center text-white text-4xl font-black italic">
                           {viewingUser.name.charAt(0)}
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="flex-1 text-center md:text-left space-y-4">
-                    <h2 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter uppercase italic">{viewingUser.name}</h2>
+                  <div className="flex-1 text-center md:text-left space-y-4 min-w-0">
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white tracking-tighter uppercase italic break-words">{viewingUser.name}</h2>
                     <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                      <div className="flex items-center space-x-2 text-gray-400 font-bold uppercase text-[9px] tracking-widest">
-                        <Mail size={12} className="text-emerald-500" />
-                        <span>{viewingUser.email || 'PRIVATE_PROFILE'}</span>
+                      <div className="flex items-center space-x-2 text-gray-400 font-bold uppercase text-[9px] tracking-widest min-w-0">
+                        <Mail size={12} className="text-emerald-500 flex-shrink-0" />
+                        <span className="truncate">{viewingUser.email || 'PRIVATE_PROFILE'}</span>
                       </div>
-                      <div className="flex items-center space-x-2 text-gray-400 font-bold uppercase text-[9px] tracking-widest">
-                        <Phone size={12} className="text-emerald-500" />
-                        <span>{viewingUser.phone}</span>
+                      <div className="flex items-center space-x-2 text-gray-400 font-bold uppercase text-[9px] tracking-widest min-w-0">
+                        <Phone size={12} className="text-emerald-500 flex-shrink-0" />
+                        <span className="truncate">{viewingUser.phone}</span>
                       </div>
                     </div>
                   </div>
@@ -1619,13 +1622,13 @@ const Admin: React.FC = () => {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Total Savings Card */}
-                  <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-[40px] border border-gray-100 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-xl hover:shadow-emerald-500/5">
+                  <div className="bg-white dark:bg-[#0a0a0a] p-6 md:p-8 rounded-3xl md:rounded-[40px] border border-gray-100 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-xl hover:shadow-emerald-500/5">
                     <div className="absolute top-0 right-0 p-8 text-emerald-500/10 transform translate-x-4 -translate-y-4 group-hover:scale-125 transition-transform duration-700">
                        <TrendingUp size={120} />
                     </div>
                     <div className="relative z-10">
                       <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500 mb-6">Total Accumulated</p>
-                      <h3 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white italic tracking-tighter">{formatCurrency(totalPaid)}</h3>
+                      <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 dark:text-white italic tracking-tighter">{formatCurrency(totalPaid)}</h3>
                       <div className="mt-6 h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
@@ -1639,13 +1642,13 @@ const Admin: React.FC = () => {
                   </div>
 
                   {/* Weeks Participated Card */}
-                  <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-[40px] border border-gray-100 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-xl hover:shadow-amber-500/5">
+                  <div className="bg-white dark:bg-[#0a0a0a] p-6 md:p-8 rounded-3xl md:rounded-[40px] border border-gray-100 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-xl hover:shadow-amber-500/5">
                     <div className="absolute top-0 right-0 p-8 text-amber-500/10 transform translate-x-4 -translate-y-4 group-hover:scale-125 transition-transform duration-700">
                        <Clock size={120} />
                     </div>
                     <div className="relative z-10">
                       <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-500 mb-6">Contribution Cycle</p>
-                      <h3 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white italic tracking-tighter">
+                      <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 dark:text-white italic tracking-tighter">
                         {fullyPaidWeeks} 
                         <span className="text-sm uppercase font-black text-gray-400 not-italic ml-2 opacity-40">/ {expectedWeeks} PAID</span>
                       </h3>
@@ -1666,7 +1669,7 @@ const Admin: React.FC = () => {
                   </div>
 
                   {/* Balance / Outstanding Card */}
-                  <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-[40px] border border-gray-100 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-xl hover:shadow-rose-500/5">
+                  <div className="bg-white dark:bg-[#0a0a0a] p-6 md:p-8 rounded-3xl md:rounded-[40px] border border-gray-100 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-xl hover:shadow-rose-500/5">
                      {balance > 0 ? (
                        <div className="absolute top-0 right-0 p-8 text-rose-500/10 transform translate-x-4 -translate-y-4 group-hover:scale-125 transition-transform duration-700">
                           <AlertTriangle size={120} />
@@ -1682,7 +1685,7 @@ const Admin: React.FC = () => {
                         balance > 0 ? "text-rose-500" : "text-emerald-500"
                       )}>Outstanding Deficit</p>
                       <h3 className={cn(
-                        "text-4xl lg:text-5xl font-black italic tracking-tighter",
+                        "text-3xl sm:text-4xl lg:text-5xl font-black italic tracking-tighter",
                         balance > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
                       )}>
                         {balance > 0 ? `-${formatCurrency(balance)}` : 'CLEAR'}
@@ -1695,9 +1698,9 @@ const Admin: React.FC = () => {
                 </div>
 
                 {/* Shares & Assessment Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {/* Share Card */}
-                  <div className="lg:col-span-1 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-[40px] p-8 flex flex-col justify-between min-h-[300px] relative overflow-hidden group shadow-2xl">
+                  <div className="md:col-span-1 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-3xl md:rounded-[40px] p-6 md:p-8 flex flex-col justify-between min-h-[300px] relative overflow-hidden group shadow-2xl">
                     <div className="absolute bottom-0 right-0 p-8 opacity-5 transform translate-y-12 group-hover:translate-y-6 transition-transform duration-700">
                       <PieChart size={200} />
                     </div>
@@ -1706,12 +1709,12 @@ const Admin: React.FC = () => {
                       <div className="space-y-8">
                         <div>
                           <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">Shares Accumulated</p>
-                          <p className="text-5xl font-black italic">{(totalPaid / shareValue).toFixed(2)}</p>
+                          <p className="text-4xl sm:text-5xl font-black italic">{(totalPaid / shareValue).toFixed(2)}</p>
                           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mt-2 italic">@ {formatCurrency(shareValue)} per share</p>
                         </div>
                         <div>
                           <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">Equity Presence %</p>
-                          <p className="text-3xl font-black italic">
+                          <p className="text-2xl sm:text-3xl font-black italic">
                             {(() => {
                               const grandTotal = contributions.reduce((s, c) => s + c.amount, 0);
                               return grandTotal > 0 ? ((totalPaid / grandTotal) * 100).toFixed(3) : '0.000';
@@ -1720,18 +1723,18 @@ const Admin: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="relative z-10 mt-auto">
-                       <Shield size={24} className="opacity-20" />
+                    <div className="relative z-10 mt-auto opacity-20">
+                       <Shield size={24} />
                     </div>
                   </div>
 
                   {/* Transaction History Ledger */}
-                  <div className="lg:col-span-3 bg-white dark:bg-[#0a0a0a] rounded-[40px] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden flex flex-col">
-                    <div className="p-8 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
+                  <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-[#0a0a0a] rounded-3xl md:rounded-[40px] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden flex flex-col">
+                    <div className="p-4 sm:p-6 md:p-8 border-b border-gray-50 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 italic">Contribution Ledger Registry</h3>
                       <button 
                         onClick={handleDownloadPDF}
-                        className="text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 px-4 py-2 rounded-xl transition-all"
+                        className="text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 px-4 py-2 rounded-xl transition-all self-start sm:self-auto"
                       >
                         Request PDF Ledger
                       </button>
@@ -1740,9 +1743,9 @@ const Admin: React.FC = () => {
                       <table className="w-full text-left">
                         <thead>
                           <tr className="border-b border-gray-50 dark:border-white/5">
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Timestamp</th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Asset Class</th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Value (KES)</th>
+                            <th className="px-4 md:px-8 py-4 md:py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Timestamp</th>
+                            <th className="px-4 md:px-8 py-4 md:py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Asset Class</th>
+                            <th className="px-4 md:px-8 py-4 md:py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Value (KES)</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50 dark:divide-white/5">
@@ -1750,11 +1753,11 @@ const Admin: React.FC = () => {
                             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                             .map((c) => (
                               <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
-                                <td className="px-8 py-6 whitespace-nowrap">
+                                <td className="px-4 md:px-8 py-4 md:py-6 whitespace-nowrap">
                                   <p className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-tighter">{format(new Date(c.date), 'MMM d, yyyy')}</p>
                                   <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5 whitespace-nowrap">{format(new Date(c.date), 'h:mm a')}</p>
                                 </td>
-                                <td className="px-8 py-6">
+                                <td className="px-4 md:px-8 py-4 md:py-6">
                                   <div className="flex items-center space-x-3">
                                     <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 flex-none scale-90 group-hover:scale-100 transition-transform">
                                       <Shield size={14} />
@@ -1762,14 +1765,14 @@ const Admin: React.FC = () => {
                                     <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tight">Savings Deposit</span>
                                   </div>
                                 </td>
-                                <td className="px-8 py-6 text-right whitespace-nowrap">
+                                <td className="px-4 md:px-8 py-4 md:py-6 text-right whitespace-nowrap">
                                   <span className="text-base md:text-xl font-black text-emerald-600 dark:text-emerald-400 italic">+{formatCurrency(c.amount)}</span>
                                 </td>
                               </tr>
                             ))}
                           {userContributions.length === 0 && (
                             <tr>
-                              <td colSpan={3} className="px-8 py-24 text-center">
+                              <td colSpan={3} className="px-4 md:px-8 py-24 text-center">
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic">No contribution records identified</p>
                               </td>
                             </tr>
@@ -1782,7 +1785,7 @@ const Admin: React.FC = () => {
               </div>
 
               {/* Summary Bottom Bar (Mobile Consistency) */}
-              <div className="md:hidden fixed bottom-16 left-0 right-0 p-4 z-40 bg-gradient-to-t from-gray-50 dark:from-[#050505] to-transparent">
+              <div className="md:hidden fixed bottom-16 left-0 right-0 p-4 z-[160] bg-gradient-to-t from-gray-50 dark:from-[#050505] to-transparent">
                  <div className="bg-white dark:bg-black p-4 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-xl flex items-center justify-between">
                     <button 
                       onClick={() => setViewingUser(null)}

@@ -39,22 +39,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         is_suspended: false,
       };
 
-      // Try to insert the profile if it doesn't exist
-      const { data: insertedData, error: insertError } = await supabase
-        .from('profiles')
-        .upsert(newProfile, { onConflict: 'id' })
-        .select()
-        .single();
-
-      if (!insertError && insertedData) {
-        setProfile(insertedData);
-      } else {
-        // Fallback to local state if DB update fails (e.g. RLS issues)
-        setProfile({
-          ...newProfile,
-          created_at: currentUser.created_at
-        } as Profile);
+      // Try to insert the profile if it doesn't exist via secure backend API
+      try {
+        const response = await fetch('/api/auth/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            name: newProfile.name,
+            phone: newProfile.phone,
+            email: newProfile.email
+          })
+        });
+        
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData.profile) {
+            setProfile(resData.profile);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error syncing profile via backend API:', err);
       }
+
+      // Fallback to local state if DB update fails or there is an issue
+      setProfile({
+        ...newProfile,
+        created_at: currentUser.created_at
+      } as Profile);
     }
   };
 

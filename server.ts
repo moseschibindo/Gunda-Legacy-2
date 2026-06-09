@@ -181,6 +181,40 @@ async function startServer() {
     }
   });
 
+  // Auth: Create/upsert user profile (bypassing Client RLS safely by verifying user exists in Auth)
+  app.post('/api/auth/create-profile', async (req, res) => {
+    const { userId, name, phone, email } = req.body;
+    if (!userId) return res.status(400).json({ error: 'User ID is required' });
+
+    try {
+      // Safely verify with Supabase Auth that the user actually exists
+      const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.getUserById(userId);
+      if (authErr || !authUser || !authUser.user) {
+        return res.status(404).json({ error: 'Unauthorized: User does not exist in Auth' });
+      }
+
+      const newProfile = {
+        id: userId,
+        name: name || authUser.user.user_metadata?.name || authUser.user.email?.split('@')[0] || 'Unknown User',
+        phone: phone || authUser.user.user_metadata?.phone || '',
+        email: email || authUser.user.user_metadata?.email || authUser.user.email || '',
+        role: 'member',
+        is_suspended: false
+      };
+
+      const { data, error } = await supabaseAdmin
+        .from('profiles')
+        .upsert(newProfile, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      res.json({ success: true, profile: data });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Auth: Get email by phone (for login)
   app.post('/api/auth/get-email', async (req, res) => {
     const { phone } = req.body;
