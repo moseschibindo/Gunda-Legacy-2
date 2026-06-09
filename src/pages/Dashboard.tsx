@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
   const BASE_DATE = startOfWeek(new Date(settings.launch_date || '2026-04-06'), { weekStartsOn: 1 });
   const SHARE_VALUE = parseFloat(settings.share_value || '25');
 
-  const fetchData = async () => {
+  const fetchData = async (isRetry = false) => {
     if (!user) return;
 
     try {
@@ -52,7 +52,17 @@ const Dashboard: React.FC = () => {
         `)
         .order('date', { ascending: false });
 
-      if (allError) throw allError;
+      if (allError) {
+        if (!isRetry && (allError.code === 'PGRST303' || (allError.message && allError.message.includes('JWT expired')))) {
+          console.warn('Dashboard: Session renewal triggered on PGRST303');
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (refreshData?.session) {
+            await fetchData(true);
+            return;
+          }
+        }
+        throw allError;
+      }
 
       if (allData) {
         setAllContributions(allData);

@@ -21,58 +21,49 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [stage, setStage] = useState(0);
   const [muted, setMuted] = useState(true);
   const [videoIndex, setVideoIndex] = useState(0);
-  const [dataSaver, setDataSaver] = useState(true); // Default to data saver to protect mobile bundles
   const [videoSrc, setVideoSrc] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Auto-detect connection quality, screen state, and manage video caching
+  // Auto-detect and manage video offline caching to minimize network usage
   useEffect(() => {
     let active = true;
-    const isMobile = window.innerWidth <= 768;
-    const nav = navigator as any;
-    const isSlowOrMetered = nav.connection 
-      ? (nav.connection.saveData || ['slow-2g', '2g', '3g'].includes(nav.connection.effectiveType))
-      : false;
 
     const arrangeVideoSource = async () => {
+      const url = ScenicVideos[videoIndex];
       try {
-        const url = ScenicVideos[videoIndex];
-        
         if ('caches' in window) {
           const cache = await caches.open('gunda-video-cache');
           const cachedResponse = await cache.match(url);
           
           if (cachedResponse) {
-            // Already cached! Create a local object URL instantly (0 network cost, playing fully offline)
+            // Found cached copy - load instantly offline!
             const blob = await cachedResponse.blob();
             if (active) {
               setVideoSrc(URL.createObjectURL(blob));
-              setDataSaver(false); // Cached video has 0 load weight/data cost, can play safely!
               return;
             }
           }
 
-          // If not cached and we are on a fast connection, load and cache in background for future turns
-          if (!isMobile && !isSlowOrMetered) {
-            const response = await fetch(url);
-            if (response.ok) {
-              await cache.put(url, response.clone());
-              const blob = await response.blob();
-              if (active) {
-                setVideoSrc(URL.createObjectURL(blob));
-                setDataSaver(false);
-                return;
-              }
-            }
+          // If not in cache, let it stream but cache it in background for subsequent sessions
+          if (active) {
+            setVideoSrc(url);
+          }
+          
+          const response = await fetch(url).catch(() => null);
+          if (response && response.ok) {
+            await cache.put(url, response.clone());
+            console.log('Video Cached successfully:', url);
+          }
+        } else {
+          if (active) {
+            setVideoSrc(url);
           }
         }
       } catch (err) {
         console.warn('Scenery video offline cache engine skipped:', err);
-      }
-
-      // If anything fails or we are preserving mobile data, default to zero-data custom render engine
-      if (active) {
-        setDataSaver(true);
+        if (active) {
+          setVideoSrc(url);
+        }
       }
     };
 
@@ -123,51 +114,23 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-0 z-[200] flex flex-col justify-between bg-[#040807] text-white overflow-hidden select-none"
     >
-      {/* Background Section (Video vs. High-Performance Mobile Nature Canvas) */}
+      {/* Background Section (Scenic Videos with High-Performance Cache support) */}
       <div className="absolute inset-0 z-0 overflow-hidden w-full h-full">
-        {dataSaver ? (
-          /* Zero-Data Beautiful Nature Canvas (Hills, Skies & Sunset Glow in CSS/SVG) */
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a1c18] via-[#040b11] to-[#010304]">
-            {/* Animated Scenic Stars & Glowing Sunbeam Accent */}
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[180%] h-[180%] bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.18)_0%,transparent_50%)] animate-pulse duration-[8000ms]" />
-            <div className="absolute top-1/3 left-1/3 w-[300px] h-[300px] bg-emerald-500/10 blur-[130px] rounded-full animate-pulse duration-[12000ms]" />
-            <div className="absolute top-10 right-1/4 w-[400px] h-[400px] bg-blue-500/10 blur-[160px] rounded-full animate-pulse duration-[10000ms]" />
-
-            {/* Breathtaking Low-poly / Fluid Svg Mountains and Hills Accent */}
-            <svg className="absolute bottom-0 left-0 w-full h-[60%] opacity-25" viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0,450 Q360,320 720,410 T1440,360 L1440,800 L0,800 Z" fill="url(#hill-grad-1)"></path>
-              <path d="M0,580 Q300,520 600,600 T1200,540 T1440,590 L1440,800 L0,800 Z" fill="url(#hill-grad-2)"></path>
-              <defs>
-                <linearGradient id="hill-grad-1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#064e3b" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#022c22" stopOpacity="0.9" />
-                </linearGradient>
-                <linearGradient id="hill-grad-2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#022c22" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="#010504" stopOpacity="1" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-        ) : (
-          /* Cinematic HD Video layer - Fully scaled for all screen types (including 100% of mobile) */
-          <div className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center">
-            <video
-              ref={videoRef}
-              key={videoSrc || ScenicVideos[videoIndex]}
-              src={videoSrc || ScenicVideos[videoIndex]}
-              autoPlay
-              loop
-              muted={muted}
-              playsInline
-              webkit-playsinline="true"
-              preload="auto"
-              onError={handleVideoError}
-              style={{ minWidth: '100%', minHeight: '100%' }}
-              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.45] saturate-[1.3] scale-102"
-            />
-          </div>
-        )}
+        <div className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center">
+          <video
+            ref={videoRef}
+            key={videoSrc || ScenicVideos[videoIndex]}
+            src={videoSrc || ScenicVideos[videoIndex]}
+            autoPlay
+            loop
+            muted={muted}
+            playsInline
+            preload="auto"
+            onError={handleVideoError}
+            style={{ minWidth: '100%', minHeight: '100%' }}
+            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.45] saturate-[1.3] scale-102"
+          />
+        </div>
 
         {/* Ambient Overlay Layer (Universal) */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#020504] via-transparent to-[#020504]/80 pointer-events-none" />
@@ -184,15 +147,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         
         <div className="flex items-center space-x-2 md:space-x-3">
           {/* Mute toggle with modern indicator */}
-          {!dataSaver && (
-            <button
-              onClick={() => setMuted(prev => !prev)}
-              className="flex items-center justify-center p-2 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 transition-all"
-              title={muted ? "Unmute Sound" : "Mute Sound"}
-            >
-              {muted ? <VolumeX className="text-white/60" size={14} /> : <Volume2 className="text-emerald-400 animate-bounce" size={14} />}
-            </button>
-          )}
+          <button
+            onClick={() => setMuted(prev => !prev)}
+            className="flex items-center justify-center p-2 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 transition-all"
+            title={muted ? "Unmute Sound" : "Mute Sound"}
+          >
+            {muted ? <VolumeX className="text-white/60" size={14} /> : <Volume2 className="text-emerald-400 animate-bounce" size={14} />}
+          </button>
 
           {/* Quick skip button */}
           <button
@@ -344,8 +305,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       {/* Modern Cinematic Loading Indicator */}
       <div className="relative z-10 px-6 pb-12 text-center w-full max-w-xs md:max-w-sm mx-auto">
         <div className="space-y-2">
-          <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-neutral-500">
-            <span>Optimized Scenery loading</span>
+          <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-[#059669]">
+            <span>Securing atmosphere portals</span>
             <span>{Math.round((stage + 1) * 33.3)}%</span>
           </div>
           <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
